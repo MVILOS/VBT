@@ -1,0 +1,236 @@
+.
+├── android
+│   └── vbt-app
+│       ├── app
+│       │   ├── build.gradle.kts
+│       │   ├── proguard-rules.pro
+│       │   └── src
+│       │       └── main
+│       │           ├── AndroidManifest.xml
+│       │           ├── java
+│       │           │   └── com
+│       │           │       └── vbt
+│       │           │           └── app
+│       │           │               ├── data
+│       │           │               │   ├── ble
+│       │           │               │   │   ├── BleConnectionState.kt
+│       │           │               │   │   ├── BleConstants.kt
+│       │           │               │   │   ├── RepFromDevice.kt
+│       │           │               │   │   └── VbtBleManager.kt
+│       │           │               │   ├── local
+│       │           │               │   │   ├── dao
+│       │           │               │   │   │   ├── ExerciseDao.kt
+│       │           │               │   │   │   ├── RepResultDao.kt
+│       │           │               │   │   │   ├── TrainingPlanDao.kt
+│       │           │               │   │   │   └── WorkoutSessionDao.kt
+│       │           │               │   │   ├── entity
+│       │           │               │   │   │   ├── ExerciseDefinitionEntity.kt
+│       │           │               │   │   │   ├── PlanExerciseEntity.kt
+│       │           │               │   │   │   ├── PlanSetEntity.kt
+│       │           │               │   │   │   ├── RepResultEntity.kt
+│       │           │               │   │   │   ├── SessionSetEntity.kt
+│       │           │               │   │   │   ├── TrainingPlanEntity.kt
+│       │           │               │   │   │   └── WorkoutSessionEntity.kt
+│       │           │               │   │   ├── PreferencesManager.kt
+│       │           │               │   │   └── VbtDatabase.kt
+│       │           │               │   ├── remote
+│       │           │               │   │   ├── ApiModels.kt
+│       │           │               │   │   └── ApiService.kt
+│       │           │               │   └── repository
+│       │           │               │       ├── AuthRepository.kt
+│       │           │               │       ├── ExerciseRepository.kt
+│       │           │               │       ├── TrainingPlanRepository.kt
+│       │           │               │       └── WorkoutRepository.kt
+│       │           │               ├── di
+│       │           │               │   ├── BleModule.kt
+│       │           │               │   ├── DatabaseModule.kt
+│       │           │               │   └── NetworkModule.kt
+│       │           │               ├── domain
+│       │           │               │   ├── model
+│       │           │               │   │   ├── ExerciseType.kt
+│       │           │               │   │   └── VelocityZone.kt
+│       │           │               │   └── usecase
+│       │           │               │       ├── CalculatePowerUseCase.kt
+│       │           │               │       ├── Estimate1RMUseCase.kt
+│       │           │               │       └── GetVelocityZoneUseCase.kt
+│       │           │               ├── MainActivity.kt
+│       │           │               ├── ui
+│       │           │               │   ├── navigation
+│       │           │               │   │   └── VbtNavGraph.kt
+│       │           │               │   ├── screen
+│       │           │               │   │   ├── athletes
+│       │           │               │   │   │   ├── AthleteListScreen.kt
+│       │           │               │   │   │   ├── AthleteListViewModel.kt
+│       │           │               │   │   │   ├── AthleteProfileScreen.kt
+│       │           │               │   │   │   └── AthleteProfileViewModel.kt
+│       │           │               │   │   ├── calendar
+│       │           │               │   │   │   ├── CalendarScreen.kt
+│       │           │               │   │   │   └── CalendarViewModel.kt
+│       │           │               │   │   ├── connect
+│       │           │               │   │   │   ├── ConnectScreen.kt
+│       │           │               │   │   │   └── ConnectViewModel.kt
+│       │           │               │   │   ├── exercises
+│       │           │               │   │   │   ├── ExerciseListScreen.kt
+│       │           │               │   │   │   └── ExerciseListViewModel.kt
+│       │           │               │   │   ├── history
+│       │           │               │   │   │   ├── HistoryScreen.kt
+│       │           │               │   │   │   ├── HistoryViewModel.kt
+│       │           │               │   │   │   ├── SessionDetailScreen.kt
+│       │           │               │   │   │   └── SessionDetailViewModel.kt
+│       │           │               │   │   ├── home
+│       │           │               │   │   │   ├── HomeScreen.kt
+│       │           │               │   │   │   └── HomeViewModel.kt
+│       │           │               │   │   ├── login
+│       │           │               │   │   │   ├── LoginScreen.kt
+│       │           │               │   │   │   └── LoginViewModel.kt
+│       │           │               │   │   ├── plans
+│       │           │               │   │   │   ├── PlanEditScreen.kt
+│       │           │               │   │   │   ├── PlanEditViewModel.kt
+│       │           │               │   │   │   ├── PlanListScreen.kt
+│       │           │               │   │   │   └── PlanListViewModel.kt
+│       │           │               │   │   ├── schedule
+│       │           │               │   │   │   ├── ScheduleScreen.kt
+│       │           │               │   │   │   └── ScheduleViewModel.kt
+│       │           │               │   │   └── workout
+│       │           │               │   │       ├── WorkoutScreen.kt
+│       │           │               │   │       └── WorkoutViewModel.kt
+│       │           │               │   └── theme
+│       │           │               │       ├── Color.kt
+│       │           │               │       ├── Theme.kt
+│       │           │               │       └── Type.kt
+│       │           │               └── VbtApplication.kt
+│       │           └── res
+│       │               ├── mipmap-hdpi
+│       │               │   ├── ic_launcher.png
+│       │               │   └── ic_launcher_round.png
+│       │               ├── mipmap-mdpi
+│       │               │   ├── ic_launcher.png
+│       │               │   └── ic_launcher_round.png
+│       │               ├── mipmap-xhdpi
+│       │               │   ├── ic_launcher.png
+│       │               │   └── ic_launcher_round.png
+│       │               ├── mipmap-xxhdpi
+│       │               │   ├── ic_launcher.png
+│       │               │   └── ic_launcher_round.png
+│       │               ├── mipmap-xxxhdpi
+│       │               │   ├── ic_launcher.png
+│       │               │   └── ic_launcher_round.png
+│       │               └── values
+│       │                   ├── strings.xml
+│       │                   └── themes.xml
+│       ├── build.gradle.kts
+│       ├── gradle
+│       │   ├── libs.versions.toml
+│       │   └── wrapper
+│       │       ├── gradle-wrapper.jar
+│       │       └── gradle-wrapper.properties
+│       ├── gradle.properties
+│       ├── gradlew
+│       ├── local.properties
+│       └── settings.gradle.kts
+├── ANDROID_V2_PLAN.md
+├── .claude
+│   └── settings.local.json
+├── .claudeignore
+├── platformio.ini
+├── README.md
+├── server
+│   ├── backend
+│   │   ├── API_EXAMPLES.md
+│   │   ├── app
+│   │   │   ├── api
+│   │   │   │   ├── analytics.py
+│   │   │   │   ├── auth.py
+│   │   │   │   ├── calendar.py
+│   │   │   │   ├── dashboard.py
+│   │   │   │   ├── exercises.py
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── plans.py
+│   │   │   │   ├── sessions.py
+│   │   │   │   └── users.py
+│   │   │   ├── core
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── security.py
+│   │   │   ├── db
+│   │   │   │   ├── database.py
+│   │   │   │   └── __init__.py
+│   │   │   ├── __init__.py
+│   │   │   ├── main.py
+│   │   │   ├── models
+│   │   │   │   └── __init__.py
+│   │   │   └── schemas
+│   │   │       └── __init__.py
+│   │   ├── Dockerfile
+│   │   ├── QUICKSTART.md
+│   │   └── requirements.txt
+│   ├── docker-compose.yml
+│   ├── frontend
+│   │   ├── Dockerfile
+│   │   ├── .gitignore
+│   │   ├── index.html
+│   │   ├── nginx-frontend.conf
+│   │   ├── package.json
+│   │   ├── postcss.config.js
+│   │   ├── QUICKSTART.md
+│   │   ├── README.md
+│   │   ├── src
+│   │   │   ├── api
+│   │   │   │   └── client.ts
+│   │   │   ├── App.tsx
+│   │   │   ├── components
+│   │   │   │   ├── Layout.tsx
+│   │   │   │   └── ProtectedRoute.tsx
+│   │   │   ├── context
+│   │   │   │   └── AuthContext.tsx
+│   │   │   ├── index.css
+│   │   │   ├── main.tsx
+│   │   │   ├── pages
+│   │   │   │   ├── AnalyticsPage.tsx
+│   │   │   │   ├── AthleteProfilePage.tsx
+│   │   │   │   ├── AthletesPage.tsx
+│   │   │   │   ├── CalendarPage.tsx
+│   │   │   │   ├── Dashboard.tsx
+│   │   │   │   ├── LoginPage.tsx
+│   │   │   │   └── PlansPage.tsx
+│   │   │   └── types
+│   │   │       └── index.ts
+│   │   ├── tailwind.config.js
+│   │   ├── tsconfig.json
+│   │   └── vite.config.ts
+│   └── nginx
+│       └── nginx.conf
+├── SESSION.md
+├── src
+│   ├── ble_server.cpp
+│   ├── ble_server.h
+│   ├── data_storage.cpp
+│   ├── data_storage.h
+│   ├── lift_detector.cpp
+│   ├── lift_detector.h
+│   └── main.cpp
+├── struktura_projektu.txt
+└── vitruvefit_inspiration
+    ├── Mobile
+    │   ├── Screenshot_20260415_200550-1.png
+    │   ├── Screenshot_20260415_200550.png
+    │   ├── Screenshot_20260415_200610.png
+    │   ├── Screenshot_20260415_200630.png
+    │   └── Screenshot_20260415_200648.png
+    └── web_app_coach
+        ├── Screenshot_20260414_133102.png
+        ├── Screenshot_20260414_133148.png
+        ├── Screenshot_20260414_133202.png
+        ├── Screenshot_20260414_133217.png
+        ├── Screenshot_20260414_133223.png
+        ├── Screenshot_20260414_133254-1.png
+        ├── Screenshot_20260414_133254.png
+        ├── Screenshot_20260414_133326-1.png
+        ├── Screenshot_20260414_133326.png
+        ├── Screenshot_20260414_133346-1.png
+        ├── Screenshot_20260414_133346.png
+        ├── Screenshot_20260414_133451-1.png
+        ├── Screenshot_20260414_133451.png
+        ├── Screenshot_20260414_133514-1.png
+        └── Screenshot_20260414_133514.png
+
+65 directories, 169 files

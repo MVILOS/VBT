@@ -1,0 +1,30 @@
+# Build outputs
+server/frontend/dist/
+server/frontend/node_modules/
+android/vbt-app/app/build/
+android/vbt-app/.gradle/
+android/vbt-app/build/
+android/vbt-app/.kotlin/
+
+# Python cache
+server/backend/__pycache__/
+server/backend/app/**/__pycache__/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Logs
+**/*.log
+**/logs/
+
+# IDE / OS
+.idea/
+**/.DS_Store
+**/*.iml
+
+# Test artifacts
+**/test-results/
+**/coverage/
+
+# Large media / assets (if any)
+vitruvefit_inspiration/

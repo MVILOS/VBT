@@ -1,0 +1,68 @@
+#ifndef LIFT_DETECTOR_H
+#define LIFT_DETECTOR_H
+
+#include <Arduino.h>
+#include <ESP32Encoder.h>
+
+// Struktura przechowująca wynik pojedynczego podniesienia
+struct LiftResult {
+    float maxVelocity;      // Maksymalna prędkość (peak) w m/s
+    float meanVelocity;     // Średnia prędkość w m/s
+    float distance;         // Przebyta odległość w m
+    unsigned long timestamp; // Timestamp (millis od bootu)
+    uint16_t duration;      // Czas trwania podniesienia w ms
+};
+
+class LiftDetector {
+private:
+    ESP32Encoder* encoder;
+
+    // Parametry konfiguracyjne
+    const float STEPS_PER_METER;
+    const float ALPHA;
+    float MIN_LIFT_VELOCITY;
+    float END_LIFT_VELOCITY;
+    const unsigned long MIN_REP_DURATION;
+    float MIN_REP_DISTANCE;
+
+    // Zmienne stanu
+    bool isLifting;
+    float maxVelocitySession;
+    float velocitySum;
+    uint16_t velocitySampleCount;
+    unsigned long liftStartTime;
+    int64_t startPosition;
+
+    // Zmienne pomiaru
+    unsigned long lastTimeMicros;
+    int64_t lastPosition;
+    float currentVelocityEMA;
+
+    // Flaga nowego wyniku
+    bool newResultAvailable;
+    LiftResult lastResult;
+    uint16_t repCount;
+
+public:
+    LiftDetector(ESP32Encoder* enc, float stepsPerMeter);
+
+    // Główna metoda aktualizacji - wywoływana w loop()
+    void update(unsigned long currentMicros);
+
+    // Sprawdzenie czy jest nowy wynik
+    bool hasNewResult();
+
+    // Pobranie ostatniego wyniku i zresetowanie flagi
+    LiftResult getLastResult();
+
+    // Pobranie aktualnej prędkości (dla live display)
+    float getCurrentVelocity() const;
+
+    // Sprawdzenie czy trwa podniesienie
+    bool isCurrentlyLifting() const;
+
+    void setExerciseParams(float minLiftVel, float endLiftVel, float minRepDist);
+    uint16_t getRepCount() const;
+};
+
+#endif

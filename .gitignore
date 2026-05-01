@@ -1,0 +1,42 @@
+# PlatformIO / ESP32 build artifacts
+.pio/
+.pioenvs/
+
+# Android build artifacts
+android/vbt-app/.gradle/
+android/vbt-app/app/build/
+android/vbt-app/build/
+android/vbt-app/local.properties
+*.apk
+*.aab
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+*.egg-info/
+dist/
+.pytest_cache/
+
+# Node / frontend
+server/frontend/node_modules/
+server/frontend/dist/
+
+# Claude / AI tools
+.agents/
+.aider.chat.history.md
+.aider.input.history
+.claude/settings.local.json
+
+# Secrets / env
+.env
+*.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db

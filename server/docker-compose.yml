@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: vbt_db
+    environment:
+      POSTGRES_USER: vbt
+      POSTGRES_PASSWORD: vbt_password
+      POSTGRES_DB: vbt_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - vbt_net
+
+  backend:
+    build: ./backend
+    container_name: vbt_backend
+    environment:
+      DATABASE_URL: postgresql://vbt:vbt_password@db:5432/vbt_db
+      SECRET_KEY: "CHANGE_ME_IN_PRODUCTION_use_openssl_rand_hex_32"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - vbt_net
+
+  frontend:
+    build: ./frontend
+    container_name: vbt_frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - vbt_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: vbt_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+    networks:
+      - vbt_net
+
+volumes:
+  postgres_data:
+
+networks:
+  vbt_net:
+    driver: bridge

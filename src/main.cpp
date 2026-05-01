@@ -1,0 +1,107 @@
+#include <Arduino.h>
+#include <ESP32Encoder.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
+#include "lift_detector.h"
+#include "data_storage.h"
+#include "ble_server.h"
+
+// --- KONFIGURACJA SPRZĘTU ---
+const float SPOOL_DIAMETER_M = 0.0074;
+const float PI_VAL = 3.14159265359;
+const float SPOOL_CIRCUMFERENCE = SPOOL_DIAMETER_M * PI_VAL;
+const float ENCODER_PPR = 1200.0;
+const float STEPS_PER_METER = ENCODER_PPR / SPOOL_CIRCUMFERENCE;
+
+// Obiekty
+ESP32Encoder encoder;
+LiftDetector* detector;
+DataStorage* storage;
+VBTBleServer* bleServer;
+
+void setup() {
+    // 1. WYŁĄCZENIE BROWNOUT DETECTOR
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+
+    Serial.begin(115200);
+
+    // 2. Konfiguracja Diody Statusowej
+    pinMode(2, OUTPUT);
+
+    // Mrugnij 3 razy na start
+    for(int i = 0; i < 3; i++) {
+        digitalWrite(2, HIGH);
+        delay(200);
+        digitalWrite(2, LOW);
+        delay(200);
+    }
+
+    // 3. Konfiguracja Enkodera
+    ESP32Encoder::useInternalWeakPullResistors = UP;
+    encoder.attachHalfQuad(25, 26);
+    encoder.setFilter(1023);
+    encoder.clearCount();
+
+    // 4. Inicjalizacja modułów
+    detector = new LiftDetector(&encoder, STEPS_PER_METER);
+    storage = new DataStorage();
+    storage->init();
+
+    // 5. Inicjalizacja BLE (zamiast WiFi)
+    bleServer = new VBTBleServer(detector, storage);
+    bleServer->begin();
+
+    // 6. Optymalizacja CPU - redukcja z 240MHz do 160MHz
+    setCpuFrequencyMhz(160);
+    Serial.printf("CPU Frequency: %d MHz\n", getCpuFrequencyMhz());
+
+    // Zapal diodę na stałe po starcie
+    digitalWrite(2, HIGH);
+
+    delay(500);
+    Serial.println("--- VECTOR VBT v2.0.0 (BLE Mode) ---");
+}
+
+void loop() {
+    unsigned long currentMicros = micros();
+
+    // LED pulsing - energooszczędny sposób
+    static unsigned long ledTimer = 0;
+    static bool ledState = false;
+
+    if (millis() - ledTimer > 2000) {
+        ledState = !ledState;
+        if (ledState) {
+            digitalWrite(2, HIGH);
+            delay(50);
+            digitalWrite(2, LOW);
+        }
+        ledTimer = millis();
+    }
+
+    // Podczas podniesienia - dioda świeci
+    if (detector->isCurrentlyLifting()) {
+        digitalWrite(2, HIGH);
+    } else {
+        if (millis() - ledTimer > 50) {
+            digitalWrite(2, LOW);
+        }
+    }
+
+    // Aktualizacja detektora podniesień
+    detector->update(currentMicros);
+
+    // Obsługa nowego wyniku
+    if (detector->hasNewResult()) {
+        LiftResult result = detector->getLastResult();
+
+        // Dodanie do historii
+        storage->addResult(result);
+
+        // Powiadomienie BLE serwera o nowym wyniku
+        bleServer->notifyNewResult();
+    }
+
+    // Aktualizacja BLE (wysyłanie notyfikacji)
+    bleServer->update();
+}
