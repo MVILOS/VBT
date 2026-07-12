@@ -115,16 +115,78 @@ def run_migrations():
         except Exception:
             conn.rollback()
 
-        # --- Zmień nazwy istniejących na format: Polska (English) ---
+        # --- Scal duplikat Power Clean (id 5 i 7 miały tę samą nazwę) ---
+        # Przepnij referencje z duplikatów na kanoniczny (najniższy) rekord,
+        # potem usuń osierocone duplikaty. Kluczujemy po obecnej nazwie w bazie.
+        for dup_name in ["Zarzut siłowy (Power Clean)"]:
+            try:
+                conn.execute(text("""
+                    WITH canon AS (
+                        SELECT MIN(id) AS keep_id FROM exercise_definitions
+                        WHERE LOWER(name) = LOWER(:name)
+                    ),
+                    dups AS (
+                        SELECT id FROM exercise_definitions, canon
+                        WHERE LOWER(name) = LOWER(:name) AND id <> canon.keep_id
+                    )
+                    UPDATE plan_exercises pe SET exercise_id = (SELECT keep_id FROM canon)
+                    WHERE pe.exercise_id IN (SELECT id FROM dups)
+                      AND NOT EXISTS (
+                          SELECT 1 FROM plan_exercises pe2
+                          WHERE pe2.plan_id = pe.plan_id
+                            AND pe2.exercise_id = (SELECT keep_id FROM canon)
+                      )
+                """), {"name": dup_name})
+                conn.execute(text("""
+                    UPDATE rep_results SET exercise_id = (
+                        SELECT MIN(id) FROM exercise_definitions WHERE LOWER(name) = LOWER(:name)
+                    )
+                    WHERE exercise_id IN (
+                        SELECT id FROM exercise_definitions
+                        WHERE LOWER(name) = LOWER(:name)
+                          AND id <> (SELECT MIN(id) FROM exercise_definitions WHERE LOWER(name) = LOWER(:name))
+                    )
+                """), {"name": dup_name})
+                conn.execute(text("""
+                    DELETE FROM exercise_definitions
+                    WHERE LOWER(name) = LOWER(:name)
+                      AND id <> (SELECT MIN(id) FROM exercise_definitions WHERE LOWER(name) = LOWER(:name))
+                      AND id NOT IN (SELECT exercise_id FROM rep_results)
+                      AND id NOT IN (SELECT exercise_id FROM plan_exercises)
+                """), {"name": dup_name})
+                conn.commit()
+            except Exception:
+                conn.rollback()
+
+        # --- Zmień nazwy istniejących na format: English (Polski) ---
+        # Klucz = obecna nazwa w bazie, wartość = nowa nazwa kanoniczna.
         renames = {
-            "Squat":                    "Przysiad (Back Squat)",
-            "Back Squat":               "Przysiad (Back Squat)",
-            "Deadlift":                 "Martwy ciąg (Deadlift)",
-            "Bench Press":              "Wyciskanie leżąc (Bench Press)",
-            "Romanian Deadlift":        "Martwy ciąg rumuński (Romanian Deadlift)",
-            "Power Clean":              "Zarzut siłowy (Power Clean)",
-            "Snatch":                   "Rwanie (Snatch)",
-            "Power Snatch":             "Rwanie siłowe (Power Snatch)",
+            "Rwanie (Snatch)":                                  "Snatch (Rwanie)",
+            "Zarzut (Clean)":                                   "Clean (Zarzut)",
+            "Wyrwanie (Jerk)":                                  "Jerk (Wyrzut)",
+            "Wyrwanie z rozkroku (Split Jerk)":                 "Split Jerk (Wyrzut nożycowy)",
+            "Szturm (Push Jerk)":                               "Push Jerk (Wyrzut siłowy)",
+            "Podrzut - Zarzut i Wyrwanie (Clean & Jerk)":       "Clean & Jerk (Podrzut)",
+            "Rwanie siłowe (Power Snatch)":                     "Power Snatch (Rwanie siłowe)",
+            "Rwanie z wieszania (Hang Snatch)":                 "Hang Snatch (Rwanie z zawieszenia)",
+            "Rwanie z klocków (Block Snatch)":                  "Block Snatch (Rwanie z bloków)",
+            "Szarpanie do rwania (Snatch Pull)":               "Snatch Pull (Ciąg rwaniowy)",
+            "Szarpanie do rwania z wieszania (Hang Snatch Pull)": "Hang Snatch Pull (Ciąg rwaniowy z zawieszenia)",
+            "Zarzut siłowy (Power Clean)":                      "Power Clean (Zarzut siłowy)",
+            "Zarzut z wieszania (Hang Clean)":                  "Hang Clean (Zarzut z zawieszenia)",
+            "Zarzut z klocków (Block Clean)":                   "Block Clean (Zarzut z bloków)",
+            "Szarpanie do zarzutu (Clean Pull)":               "Clean Pull (Ciąg zarzutowy)",
+            "Szarpanie do zarzutu z wieszania (Hang Clean Pull)": "Hang Clean Pull (Ciąg zarzutowy z zawieszenia)",
+            "Przysiad (Back Squat)":                            "Back Squat (Przysiad tylny)",
+            "Przysiad przedni (Front Squat)":                   "Front Squat (Przysiad przedni)",
+            "Martwy ciąg (Deadlift)":                           "Deadlift (Martwy ciąg)",
+            "Martwy ciąg rumuński (Romanian Deadlift)":         "Romanian Deadlift (Martwy ciąg rumuński)",
+            "Wyciskanie leżąc (Bench Press)":                   "Bench Press (Wyciskanie leżąc)",
+            "Wyciskanie żołnierskie (Overhead Press)":          "Overhead Press (Wyciskanie nad głowę)",
+            "Szturm ze sztangą (Push Press)":                   "Push Press (Wyciskanie siłowe)",
+            "Przysiad skoczny (Jump Squat)":                    "Jump Squat (Przysiad ze skokiem)",
+            "Wiosłowanie sztangą (Barbell Row)":               "Barbell Row (Wiosłowanie sztangą)",
+            "Dobre rano (Good Morning)":                        "Good Morning (Skłon dzień dobry)",
         }
         for old_name, new_name in renames.items():
             try:
@@ -138,17 +200,8 @@ def run_migrations():
             except Exception:
                 conn.rollback()
 
-        # --- Zaktualizuj MVT i category dla istniejących ---
-        mvt_updates = [
-            ("Przysiad (Back Squat)",                   "strength",  0.30),
-            ("Rwanie (Snatch)",                         "olympic",   0.80),
-            ("Zarzut siłowy (Power Clean)",             "olympic",   0.85),
-            ("Rwanie siłowe (Power Snatch)",            "olympic",   1.00),
-            ("Wyciskanie leżąc (Bench Press)",          "strength",  0.17),
-            ("Martwy ciąg (Deadlift)",                  "strength",  0.15),
-            ("Martwy ciąg rumuński (Romanian Deadlift)","strength",  0.15),
-        ]
-        for name, cat, mvt in mvt_updates:
+        # --- Zaktualizuj MVT i category dla istniejących (po zmianie nazw) ---
+        for name, cat, mvt, _desc in EXERCISES:
             try:
                 conn.execute(text("""
                     UPDATE exercise_definitions
