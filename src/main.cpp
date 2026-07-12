@@ -1,18 +1,33 @@
 #include <Arduino.h>
-#include <ESP32Encoder.h>
+#include "quad_encoder.h"
 #include "lift_detector.h"
 #include "data_storage.h"
 #include "ble_server.h"
 
-// --- KONFIGURACJA SPRZĘTU ---
+// --- KONFIGURACJA SPRZĘTU (ESP32-C3 SuperMini) ---
 const float SPOOL_DIAMETER_M = 0.04;
 const float PI_VAL = 3.14159265359;
 const float SPOOL_CIRCUMFERENCE = SPOOL_DIAMETER_M * PI_VAL;
 const float ENCODER_PPR = 1200.0;
 const float STEPS_PER_METER = ENCODER_PPR / SPOOL_CIRCUMFERENCE;
 
+// UWAGA: piny przeniesione z klasycznego ESP32 (25/26, LED=2) na ESP32-C3,
+// który ma tylko GPIO 0-21. Kanały A/B enkodera wg zgłoszenia: GPIO 5 i 6
+// ("chyba" - do potwierdzenia fizycznie po podłączeniu). LED_PIN=8 to
+// standardowe położenie wbudowanej diody na klonach ESP32-C3 SuperMini,
+// zwykle podłączonej w logice ODWRÓCONEJ (aktywna stanem LOW) - stąd
+// LED_ACTIVE_LOW poniżej. Zweryfikuj oba na fizycznej płytce.
+const int ENCODER_PIN_A = 5;
+const int ENCODER_PIN_B = 6;
+const int LED_PIN = 8;
+const bool LED_ACTIVE_LOW = true;
+
+inline void ledWrite(bool on) {
+    digitalWrite(LED_PIN, (on != LED_ACTIVE_LOW) ? HIGH : LOW);
+}
+
 // Obiekty
-ESP32Encoder encoder;
+QuadEncoder encoder;
 LiftDetector* detector;
 DataStorage* storage;
 VBTBleServer* bleServer;
@@ -25,20 +40,19 @@ void setup() {
     Serial.println("Starting VBT...");
 
     // 2. Konfiguracja Diody Statusowej
-    pinMode(2, OUTPUT);
+    pinMode(LED_PIN, OUTPUT);
 
     // Mrugnij 3 razy na start
     for(int i = 0; i < 3; i++) {
-        digitalWrite(2, HIGH);
+        ledWrite(true);
         delay(200);
-        digitalWrite(2, LOW);
+        ledWrite(false);
         delay(200);
     }
 
-    // 3. Konfiguracja Enkodera
-    ESP32Encoder::useInternalWeakPullResistors = UP;
-    encoder.attachFullQuad(25, 26);
-    encoder.setFilter(1023);
+    // 3. Konfiguracja Enkodera (własny dekoder kwadratury - patrz quad_encoder.h,
+    // ESP32-C3 nie ma sprzętowego PCNT wymaganego przez ESP32Encoder)
+    encoder.attach(ENCODER_PIN_A, ENCODER_PIN_B);
     encoder.clearCount();
 
     // 4. Inicjalizacja modułów
@@ -58,7 +72,7 @@ void setup() {
     Serial.println("BLE ready");
 
     // Zapal diodę na stałe po starcie
-    digitalWrite(2, HIGH);
+    ledWrite(true);
 
     delay(500);
     Serial.println("--- VECTOR VBT v2.0.0 (BLE Mode) ---");
@@ -74,19 +88,19 @@ void loop() {
     if (millis() - ledTimer > 2000) {
         ledState = !ledState;
         if (ledState) {
-            digitalWrite(2, HIGH);
+            ledWrite(true);
             delay(50);
-            digitalWrite(2, LOW);
+            ledWrite(false);
         }
         ledTimer = millis();
     }
 
     // Podczas podniesienia - dioda świeci
     if (detector->isCurrentlyLifting()) {
-        digitalWrite(2, HIGH);
+        ledWrite(true);
     } else {
         if (millis() - ledTimer > 50) {
-            digitalWrite(2, LOW);
+            ledWrite(false);
         }
     }
 

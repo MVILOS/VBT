@@ -186,8 +186,14 @@ void VBTBleServer::update() {
         lastStatusUpdate = millis();
     }
 
-    // Send live velocity notifications at up to 50Hz (every 20ms)
-    if (millis() - lastNotifyTime >= 20) {
+    // Send live velocity notifications at up to 50Hz (every 20ms) - ale NIE
+    // podczas trwającego powtórzenia. Chip ma jeden rdzeń, więc wywołanie
+    // notify() (blokujące na czas obsługi stosu BLE) w trakcie próbkowania
+    // enkodera w LiftDetector::update() wprowadza jitter/utracone próbki
+    // dokładnie w momencie, gdy precyzja pomiaru jest najważniejsza.
+    // Wynik powtórzenia i tak trafia do aplikacji natychmiast po jego
+    // zakończeniu przez sendRepResult() w notifyNewResult().
+    if (!detector->isCurrentlyLifting() && millis() - lastNotifyTime >= 20) {
         sendLiveVelocity();
         lastNotifyTime = millis();
     }

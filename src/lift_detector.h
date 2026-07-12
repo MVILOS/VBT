@@ -2,7 +2,7 @@
 #define LIFT_DETECTOR_H
 
 #include <Arduino.h>
-#include <ESP32Encoder.h>
+#include "quad_encoder.h"
 
 // Struktura przechowująca wynik pojedynczego podniesienia
 struct LiftResult {
@@ -15,7 +15,7 @@ struct LiftResult {
 
 class LiftDetector {
 private:
-    ESP32Encoder* encoder;
+    QuadEncoder* encoder;
 
     // Parametry konfiguracyjne
     const float STEPS_PER_METER;
@@ -25,6 +25,14 @@ private:
     const unsigned long MIN_REP_DURATION;
     float MIN_REP_DISTANCE;
 
+    // Okres blokady po zakończeniu powtórzenia - ignoruje odbicie sztangi
+    // od podłoża/stojaka (fałszywe wykrycie nowego powtórzenia)
+    static const unsigned long POST_REP_LOCKOUT_MS = 600;
+    // Liczba kolejnych próbek poniżej END_LIFT_VELOCITY wymagana do
+    // faktycznego zakończenia powtórzenia - chroni przed przedwczesnym
+    // ucięciem przy sticking poincie (typowe w przysiadach)
+    static const uint8_t END_CONFIRM_SAMPLES = 3;
+
     // Zmienne stanu
     bool isLifting;
     float maxVelocitySession;
@@ -32,6 +40,8 @@ private:
     uint16_t velocitySampleCount;
     unsigned long liftStartTime;
     int64_t startPosition;
+    unsigned long lastRepEndTime;
+    uint8_t belowEndThresholdCount;
 
     // Zmienne pomiaru
     unsigned long lastTimeMicros;
@@ -44,7 +54,7 @@ private:
     uint16_t repCount;
 
 public:
-    LiftDetector(ESP32Encoder* enc, float stepsPerMeter);
+    LiftDetector(QuadEncoder* enc, float stepsPerMeter);
 
     // Główna metoda aktualizacji - wywoływana w loop()
     void update(unsigned long currentMicros);

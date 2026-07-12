@@ -1,6 +1,6 @@
 #include "lift_detector.h"
 
-LiftDetector::LiftDetector(ESP32Encoder* enc, float stepsPerMeter)
+LiftDetector::LiftDetector(QuadEncoder* enc, float stepsPerMeter)
     : encoder(enc),
       STEPS_PER_METER(stepsPerMeter),
       ALPHA(0.20f),
@@ -11,6 +11,8 @@ LiftDetector::LiftDetector(ESP32Encoder* enc, float stepsPerMeter)
       velocitySampleCount(0),
       liftStartTime(0),
       startPosition(0),
+      lastRepEndTime(0),
+      belowEndThresholdCount(0),
       lastTimeMicros(0),
       lastPosition(0),
       currentVelocityEMA(0.0f),
@@ -46,12 +48,17 @@ void LiftDetector::update(unsigned long currentMicros) {
     }
 
     if (!isLifting) {
-        // Detekcja rozpoczęcia podniesienia
-        if (currentVelocityEMA > MIN_LIFT_VELOCITY) {
+        // Detekcja rozpoczęcia podniesienia - zablokowana na POST_REP_LOCKOUT_MS
+        // po poprzednim powtórzeniu, żeby odbicie sztangi od podłoża/stojaka
+        // (gwałtowny, krótki skok prędkości w górę zaraz po odłożeniu) nie
+        // zostało błędnie zaliczone jako nowe powtórzenie
+        bool lockoutActive = (millis() - lastRepEndTime) < POST_REP_LOCKOUT_MS;
+        if (!lockoutActive && currentVelocityEMA > MIN_LIFT_VELOCITY) {
             isLifting = true;
             maxVelocitySession = 0.0f;
             velocitySum = 0.0f;
             velocitySampleCount = 0;
+            belowEndThresholdCount = 0;
             liftStartTime = millis();
             startPosition = currentPositionRaw;
             Serial.println("Rozpoczęcie podniesienia");
@@ -67,8 +74,17 @@ void LiftDetector::update(unsigned long currentMicros) {
             velocitySampleCount++;
         }
 
-        // Detekcja zakończenia podniesienia
+        // Detekcja zakończenia podniesienia - wymaga END_CONFIRM_SAMPLES kolejnych
+        // próbek poniżej progu, żeby chwilowy spadek prędkości w sticking poincie
+        // (typowe w ciężkich przysiadach) nie ucinał powtórzenia w połowie ruchu
+        // i nie zaniżał sztucznie średniej prędkości
         if (currentVelocityEMA < END_LIFT_VELOCITY) {
+            belowEndThresholdCount++;
+        } else {
+            belowEndThresholdCount = 0;
+        }
+
+        if (belowEndThresholdCount >= END_CONFIRM_SAMPLES) {
             unsigned long duration = millis() - liftStartTime;
             float liftDistance = (float)(currentPositionRaw - startPosition) / STEPS_PER_METER;
 
@@ -91,6 +107,8 @@ void LiftDetector::update(unsigned long currentMicros) {
             }
 
             isLifting = false;
+            belowEndThresholdCount = 0;
+            lastRepEndTime = millis();
         }
     }
 
