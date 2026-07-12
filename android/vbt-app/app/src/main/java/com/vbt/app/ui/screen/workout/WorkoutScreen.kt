@@ -20,6 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +46,24 @@ fun WorkoutScreen(
     val state by viewModel.uiState.collectAsState()
     var showWeightNumpad by remember { mutableStateOf(false) }
     var showFinishConfirm by remember { mutableStateOf(false) }
+
+    // Ekran nie może gasnąć w trakcie aktywnej serii - telefon leży obok
+    // sztangi i zawodnik patrzy na prędkość między powtórzeniami.
+    val view = LocalView.current
+    DisposableEffect(state.mode) {
+        view.keepScreenOn = state.mode == WorkoutMode.ACTIVE
+        onDispose { view.keepScreenOn = false }
+    }
+
+    // Wibracja przy każdym zaliczonym powtórzeniu - potwierdzenie bez
+    // patrzenia w telefon w trakcie serii.
+    val haptic = LocalHapticFeedback.current
+    val repCount = state.completedRepsInSet.size
+    LaunchedEffect(repCount) {
+        if (repCount > 0 && state.mode == WorkoutMode.ACTIVE) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -780,7 +801,7 @@ private fun ExercisePickerPanel(
                 currentValue = loadInput.toFloatOrNull() ?: 0f,
                 onDismiss = { showNumpad = false },
                 onConfirm = { newKg ->
-                    loadInput = String.format("%.1f", newKg)
+                    loadInput = formatKg(newKg)
                     showNumpad = false
                 }
             )
@@ -820,7 +841,7 @@ private fun WorkoutActiveContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        "${String.format("%.1f", state.currentLoadKg)} kg",
+                        "${formatKg(state.currentLoadKg)} kg",
                         style = MaterialTheme.typography.displaySmall,
                         fontWeight = FontWeight.Bold,
                         color = VbtTeal
@@ -897,7 +918,7 @@ private fun WorkoutActiveContent(
         // Set info
         if (state.targetReps > 0) {
             Text(
-                "Seria ${state.currentSetIndex + 1} - cel: ${state.completedRepsInSet.size} / ${state.targetReps} powtórzeń × ${String.format("%.1f", state.currentLoadKg)} kg",
+                "Seria ${state.currentSetIndex + 1} - cel: ${state.completedRepsInSet.size} / ${state.targetReps} powtórzeń × ${formatKg(state.currentLoadKg)} kg",
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = if (state.completedRepsInSet.size >= state.targetReps) VbtTeal else Color.White
@@ -1057,7 +1078,7 @@ private fun WorkoutFinishedContent(
             ) {
                 SummaryRow("Powtórzeń", state.allReps.size.toString())
                 SummaryRow("Ćwiczenie", state.currentExerciseName)
-                SummaryRow("Obciążenie", "%.1f kg".format(state.currentLoadKg))
+                SummaryRow("Obciążenie", "${formatKg(state.currentLoadKg)} kg")
                 if (state.peakVelocity > 0) {
                     SummaryRow("Szczytowa prędkość", "%.2f m/s".format(state.peakVelocity))
                 }
@@ -1065,7 +1086,7 @@ private fun WorkoutFinishedContent(
                 val durationMinutes = durationSeconds / 60
                 SummaryRow("Czas trwania", "${durationMinutes} min")
                 val totalVolume = state.allReps.size * state.currentLoadKg
-                SummaryRow("Objętość", String.format("%.1f kg", totalVolume))
+                SummaryRow("Objętość", "${formatKg(totalVolume)} kg")
             }
         }
 
@@ -1205,7 +1226,7 @@ private fun ChangeExerciseOverlay(
             currentValue = loadInput.toFloatOrNull() ?: 0f,
             onDismiss = { showNumpad = false },
             onConfirm = { newKg ->
-                loadInput = String.format("%.1f", newKg)
+                loadInput = formatKg(newKg)
                 showNumpad = false
             }
         )
@@ -1214,6 +1235,14 @@ private fun ChangeExerciseOverlay(
 
 // ==================== Weight Numpad Bottom Sheet ====================
 
+// Formatowanie kg niezależne od locale: zawsze kropka dziesiętna (parsowalna
+// przez toFloatOrNull) i bez zbędnego ".0" - "100" zamiast "100,0".
+// String.format("%.1f") w polskim locale daje przecinek, którego
+// toFloatOrNull() nie parsuje - to blokowało przycisk Rozpocznij/OK.
+internal fun formatKg(value: Float): String =
+    if (value % 1f == 0f) value.toInt().toString()
+    else String.format(java.util.Locale.US, "%.1f", value)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeightNumpad(
@@ -1221,10 +1250,39 @@ fun WeightNumpad(
     onDismiss: () -> Unit,
     onConfirm: (Float) -> Unit
 ) {
-    var input by remember { mutableStateOf(String.format("%.1f", currentValue)) }
+    var input by remember { mutableStateOf(if (currentValue > 0f) formatKg(currentValue) else "0") }
+    // Tryb kalkulatorowy: pierwsza wciśnięta cyfra ZASTĘPUJE prefabrykowaną
+    // wartość zamiast doklejać się na końcu (wcześniej start "0.0" + "5" + "0"
+    // dawał "0.050" zamiast "50"). Przyciski +/- edytują wartość i ponownie
+    // uzbrajają zastępowanie, więc korekta cyframi zaczyna od zera.
+    var replaceOnNextDigit by remember { mutableStateOf(true) }
+
+    fun press(char: String) {
+        if (replaceOnNextDigit) {
+            input = if (char == ".") "0." else char
+            replaceOnNextDigit = false
+            return
+        }
+        if (char == ".") {
+            if (!input.contains(".")) input = input.ifEmpty { "0" } + "."
+            return
+        }
+        val dot = input.indexOf('.')
+        // Limity sensownego obciążenia: max 3 cyfry całkowite, 1 miejsce po kropce
+        if (dot >= 0 && input.length - dot > 1) return
+        if (dot < 0 && input.length >= 3) return
+        input = if (input == "0") char else input + char
+    }
+
+    fun bump(delta: Float) {
+        val current = input.toFloatOrNull() ?: 0f
+        input = formatKg((current + delta).coerceIn(0f, 999.5f))
+        replaceOnNextDigit = true
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = VbtBackground,
         scrimColor = Color.Black.copy(alpha = 0.32f)
     ) {
@@ -1256,29 +1314,50 @@ fun WeightNumpad(
                     fontWeight = FontWeight.Bold,
                     color = VbtTeal
                 )
+                TextButton(
+                    onClick = { input = "0"; replaceOnNextDigit = true },
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Text("C", fontSize = 20.sp, color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Quick add buttons
+            // Quick +/- buttons (typowe skoki talerzy)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                listOf("+2.5", "+5", "+10", "+20", "+25").forEach { increment ->
+                listOf(2.5f, 5f, 10f, 20f, 25f).forEach { step ->
                     Button(
-                        onClick = {
-                            val current = input.toFloatOrNull() ?: 0f
-                            input = String.format("%.1f", current + increment.drop(1).toFloat())
-                        },
+                        onClick = { bump(step) },
                         modifier = Modifier
                             .weight(1f)
-                            .height(40.dp),
+                            .height(44.dp),
                         contentPadding = PaddingValues(0.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = VbtTeal)
                     ) {
-                        Text(increment, fontSize = 11.sp)
+                        Text("+${formatKg(step)}", fontSize = 12.sp)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(2.5f, 5f, 10f, 20f, 25f).forEach { step ->
+                    OutlinedButton(
+                        onClick = { bump(-step) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("-${formatKg(step)}", fontSize = 12.sp, color = VbtTeal)
                     }
                 }
             }
@@ -1290,66 +1369,46 @@ fun WeightNumpad(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Row 1: 7 8 9
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    repeat(3) { i ->
-                        NumpadButton(
-                            label = (7 + i).toString(),
-                            onClick = { input += (7 + i).toString() },
-                            modifier = Modifier.weight(1f)
-                        )
+                listOf(listOf("7", "8", "9"), listOf("4", "5", "6"), listOf("1", "2", "3")).forEach { row ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        row.forEach { digit ->
+                            NumpadButton(
+                                label = digit,
+                                onClick = { press(digit) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
 
-                // Row 2: 4 5 6
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    repeat(3) { i ->
-                        NumpadButton(
-                            label = (4 + i).toString(),
-                            onClick = { input += (4 + i).toString() },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-
-                // Row 3: 1 2 3
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    repeat(3) { i ->
-                        NumpadButton(
-                            label = (1 + i).toString(),
-                            onClick = { input += (1 + i).toString() },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-
-                // Row 4: . 0 C
+                // Row 4: . 0 backspace
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     NumpadButton(
                         label = ".",
-                        onClick = { if (!input.contains(".")) input += "." },
+                        onClick = { press(".") },
                         modifier = Modifier.weight(1f)
                     )
                     NumpadButton(
                         label = "0",
-                        onClick = { input += "0" },
+                        onClick = { press("0") },
                         modifier = Modifier.weight(1f)
                     )
                     NumpadButton(
-                        label = "C",
-                        onClick = { input = "" },
+                        label = "⌫",
+                        onClick = {
+                            if (replaceOnNextDigit) {
+                                input = "0"; replaceOnNextDigit = true
+                            } else {
+                                input = input.dropLast(1).ifEmpty { "0" }
+                                if (input == "0") replaceOnNextDigit = true
+                            }
+                        },
                         modifier = Modifier.weight(1f),
                         isDelete = true
                     )
@@ -1363,13 +1422,13 @@ fun WeightNumpad(
                 onClick = {
                     input.toFloatOrNull()?.let { onConfirm(it) }
                 },
-                enabled = input.toFloatOrNull() != null && input.toFloatOrNull()!! > 0,
+                enabled = (input.toFloatOrNull() ?: 0f) > 0f,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = VbtTeal)
             ) {
-                Text("OK", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("OK", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -1386,7 +1445,7 @@ private fun NumpadButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.height(48.dp),
+        modifier = modifier.height(56.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isDelete)

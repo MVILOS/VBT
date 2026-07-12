@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vbt.app.ui.theme.VbtError
 import com.vbt.app.ui.theme.VbtSurface
+import com.vbt.app.ui.screen.workout.formatKg
 import com.vbt.app.ui.theme.VbtTeal
 import com.vbt.app.ui.theme.VbtTextSecondary
 
@@ -465,12 +466,21 @@ fun ExerciseEditCard(
                         style = MaterialTheme.typography.bodySmall
                     )
 
+                    // Lokalny stan tekstu: pole musi dać się wyczyścić i przyjmować
+                    // stany pośrednie ("", "12.") w trakcie pisania - wcześniej
+                    // value było brane wprost z modelu i przy każdym nieparsowalnym
+                    // wpisie pole "wracało" do starej wartości, walcząc z użytkownikiem.
+                    var repsText by remember(set.setNumber, set.reps) { mutableStateOf(set.reps.toString()) }
+                    var loadText by remember(set.setNumber) { mutableStateOf(formatKg(set.loadKg)) }
+                    var restText by remember(set.setNumber, set.restSeconds) { mutableStateOf(set.restSeconds.toString()) }
+
                     OutlinedTextField(
-                        value = set.reps.toString(),
+                        value = repsText,
                         onValueChange = { value ->
-                            value.toIntOrNull()?.let { onUpdateSet(setIdx, "reps", it) }
+                            repsText = value.filter { it.isDigit() }.take(3)
+                            repsText.toIntOrNull()?.let { onUpdateSet(setIdx, "reps", it) }
                         },
-                        modifier = Modifier.width(50.dp),
+                        modifier = Modifier.width(56.dp),
                         textStyle = MaterialTheme.typography.bodySmall,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -481,11 +491,13 @@ fun ExerciseEditCard(
                     )
 
                     OutlinedTextField(
-                        value = set.loadKg.toString(),
+                        value = loadText,
                         onValueChange = { value ->
-                            value.toFloatOrNull()?.let { onUpdateSet(setIdx, "loadKg", it) }
+                            // Polska klawiatura dziesiętna daje przecinek - normalizuj do kropki
+                            loadText = value.replace(',', '.').filter { it.isDigit() || it == '.' }.take(6)
+                            loadText.toFloatOrNull()?.let { onUpdateSet(setIdx, "loadKg", it) }
                         },
-                        modifier = Modifier.width(50.dp),
+                        modifier = Modifier.width(68.dp),
                         textStyle = MaterialTheme.typography.bodySmall,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -496,9 +508,10 @@ fun ExerciseEditCard(
                     )
 
                     OutlinedTextField(
-                        value = set.restSeconds.toString(),
+                        value = restText,
                         onValueChange = { value ->
-                            value.toIntOrNull()?.let { onUpdateSet(setIdx, "restSeconds", it) }
+                            restText = value.filter { it.isDigit() }.take(4)
+                            restText.toIntOrNull()?.let { onUpdateSet(setIdx, "restSeconds", it) }
                         },
                         modifier = Modifier.weight(1f),
                         textStyle = MaterialTheme.typography.bodySmall,
