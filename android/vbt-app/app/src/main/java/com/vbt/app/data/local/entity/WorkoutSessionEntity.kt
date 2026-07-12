@@ -28,5 +28,9 @@ data class WorkoutSessionEntity(
     // Server-assigned session ID after live sync
     val serverSessionId: Int? = null,
     // Athlete server ID (for sync)
-    val athleteServerId: Int? = null
+    val athleteServerId: Int? = null,
+    // Tętno z opaski/pasa HR (BLE Heart Rate service) - tylko lokalnie,
+    // backend nie ma jeszcze pól HR
+    val avgHeartRate: Int? = null,
+    val maxHeartRate: Int? = null
 )

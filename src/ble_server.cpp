@@ -274,6 +274,13 @@ void VBTBleServer::sendRepResult(const LiftResult& result) {
     data[10] = repIdx & 0xFF;
     data[11] = (repIdx >> 8) & 0xFF;
 
+    // Bytes 12-13: maxVelocity / peak (uint16_t, m/s * 1000)
+    // Dotąd zarezerwowane (zawsze 0) - starsze aplikacje je ignorują,
+    // nowsza aplikacja traktuje 0 jako "stary firmware" i używa meanVelocity.
+    uint16_t peakVel = (uint16_t)(result.maxVelocity * 1000.0f);
+    data[12] = peakVel & 0xFF;
+    data[13] = (peakVel >> 8) & 0xFF;
+
     // Bytes 14-15: reserved
     data[14] = 0;
     data[15] = 0;

@@ -25,6 +25,13 @@ interface WorkoutSessionDao {
     @Query("UPDATE workout_sessions SET serverSessionId = :serverSessionId WHERE id = :id")
     suspend fun updateServerSessionId(id: Long, serverSessionId: Int)
 
+    // Sesje zakończone lokalnie, które nigdy nie trafiły na serwer
+    @Query("SELECT * FROM workout_sessions WHERE status = 'finished' AND serverSessionId IS NULL ORDER BY startedAt ASC")
+    suspend fun getUnsyncedSessions(): List<WorkoutSessionEntity>
+
+    @Query("UPDATE workout_sessions SET avgHeartRate = :avgHeartRate, maxHeartRate = :maxHeartRate WHERE id = :id")
+    suspend fun updateHeartRate(id: Long, avgHeartRate: Int?, maxHeartRate: Int?)
+
     @Query("SELECT * FROM workout_sessions ORDER BY startedAt DESC")
     suspend fun getAllSessionsOnce(): List<WorkoutSessionEntity>
 

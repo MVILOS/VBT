@@ -47,6 +47,12 @@ class WorkoutRepository @Inject constructor(
         sessionDao.updateServerSessionId(sessionId, serverSessionId)
     }
 
+    suspend fun getUnsyncedSessions(): List<WorkoutSessionEntity> = sessionDao.getUnsyncedSessions()
+
+    suspend fun updateSessionHeartRate(sessionId: Long, avgHeartRate: Int?, maxHeartRate: Int?) {
+        sessionDao.updateHeartRate(sessionId, avgHeartRate, maxHeartRate)
+    }
+
     suspend fun deleteSession(sessionId: Long) {
         val session = sessionDao.getSessionById(sessionId) ?: return
         sessionDao.deleteSession(session)
@@ -94,7 +100,8 @@ class WorkoutRepository @Inject constructor(
     suspend fun addRep(
         sessionSetId: Long,
         repNumber: Int,
-        maxVelocityMs: Float,
+        meanVelocityMs: Float,
+        peakVelocityMs: Float,
         distanceM: Float,
         durationMs: Int,
         powerW: Float,
@@ -105,7 +112,8 @@ class WorkoutRepository @Inject constructor(
             RepResultEntity(
                 sessionSetId = sessionSetId,
                 repNumber = repNumber,
-                maxVelocityMs = maxVelocityMs,
+                maxVelocityMs = meanVelocityMs,
+                peakVelocityMs = peakVelocityMs,
                 distanceM = distanceM,
                 durationMs = durationMs,
                 powerW = powerW,

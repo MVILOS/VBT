@@ -323,6 +323,7 @@ fun StatusChip(state: BleConnectionState) {
         BleConnectionState.CONNECTED -> Triple(VbtSuccess.copy(alpha = 0.2f), VbtSuccess, "Connected")
         BleConnectionState.DISCONNECTED -> Triple(Color.Gray.copy(alpha = 0.2f), Color.Gray, "Disconnected")
         BleConnectionState.CONNECTING -> Triple(Color.Yellow.copy(alpha = 0.2f), Color.Yellow, "Connecting")
+        BleConnectionState.RECONNECTING -> Triple(Color.Yellow.copy(alpha = 0.2f), Color.Yellow, "Reconnecting")
         else -> Triple(Color.Gray.copy(alpha = 0.2f), Color.Gray, "Unknown")
     }
 

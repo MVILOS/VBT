@@ -3,21 +3,16 @@ package com.vbt.app.ui.screen.connect
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
-import android.os.ParcelUuid
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vbt.app.data.ble.BleConnectionState
 import com.vbt.app.data.ble.BleConstants
+import com.vbt.app.data.ble.HeartRateManager
 import com.vbt.app.data.ble.VbtBleManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,7 +36,9 @@ data class ConnectUiState(
 @HiltViewModel
 class ConnectViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val bleManager: VbtBleManager
+    private val bleManager: VbtBleManager,
+    // Współdzielony singleton - tętno płynie też do WorkoutViewModel
+    private val heartRateManager: HeartRateManager
 ) : ViewModel() {
 
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
@@ -54,18 +51,22 @@ class ConnectViewModel @Inject constructor(
     private var currentEsp32ScanCallback: ScanCallback? = null
     private var currentHrScanCallback: ScanCallback? = null
 
-    private var hrGatt: BluetoothGatt? = null
-    private var hrCharacteristic: BluetoothGattCharacteristic? = null
-
     private val hrServiceUuid = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb")
-    private val hrMeasurementUuid = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb")
-    private val clientCharacteristicConfigUuid =
-        UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
     init {
         viewModelScope.launch {
             bleManager.connectionState.collect { state ->
                 _uiState.value = _uiState.value.copy(esp32State = state)
+            }
+        }
+        viewModelScope.launch {
+            heartRateManager.connectionState.collect { state ->
+                _uiState.value = _uiState.value.copy(hrState = state)
+            }
+        }
+        viewModelScope.launch {
+            heartRateManager.heartRate.collect { hr ->
+                _uiState.value = _uiState.value.copy(heartRate = hr)
             }
         }
     }
@@ -187,64 +188,24 @@ class ConnectViewModel @Inject constructor(
     @SuppressLint("MissingPermission")
     fun connectHrMonitor(device: BluetoothDevice) {
         stopScanHrMonitor()
-        _uiState.value = _uiState.value.copy(hrState = BleConnectionState.CONNECTING)
-
-        hrGatt = device.connectGatt(context, false, object : BluetoothGattCallback() {
-            override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-                if (newState == BluetoothGatt.STATE_CONNECTED) {
-                    _uiState.value = _uiState.value.copy(hrState = BleConnectionState.CONNECTED)
-                    gatt.discoverServices()
-                } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                    _uiState.value = _uiState.value.copy(hrState = BleConnectionState.DISCONNECTED)
-                }
-            }
-
-            override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
-                if (status == BluetoothGatt.GATT_SUCCESS) {
-                    val service = gatt.getService(hrServiceUuid)
-                    hrCharacteristic = service?.getCharacteristic(hrMeasurementUuid)
-                    hrCharacteristic?.let {
-                        gatt.setCharacteristicNotification(it, true)
-                        val descriptor = it.getDescriptor(clientCharacteristicConfigUuid)
-                        descriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                        gatt.writeDescriptor(descriptor)
-                    }
-                }
-            }
-
-            override fun onCharacteristicChanged(
-                gatt: BluetoothGatt,
-                characteristic: BluetoothGattCharacteristic,
-                value: ByteArray
-            ) {
-                if (characteristic.uuid == hrMeasurementUuid && value.isNotEmpty()) {
-                    val heartRate = value[1].toInt() and 0xFF
-                    _uiState.value = _uiState.value.copy(heartRate = heartRate)
-                }
-            }
-        })
+        heartRateManager.connect(device)
     }
 
     @SuppressLint("MissingPermission")
     fun disconnectEsp32() {
-        _uiState.value = _uiState.value.copy(esp32State = BleConnectionState.DISCONNECTING)
         bleManager.disconnectDevice()
     }
 
     @SuppressLint("MissingPermission")
     fun disconnectHrMonitor() {
-        _uiState.value = _uiState.value.copy(hrState = BleConnectionState.DISCONNECTING)
-        hrGatt?.disconnect()
-        hrGatt?.close()
-        hrGatt = null
-        hrCharacteristic = null
-        _uiState.value = _uiState.value.copy(hrState = BleConnectionState.DISCONNECTED)
+        heartRateManager.disconnect()
     }
 
     override fun onCleared() {
         super.onCleared()
         stopScanEsp32()
         stopScanHrMonitor()
-        disconnectHrMonitor()
+        // Celowo NIE rozłączamy pasa HR - połączenie żyje w singletonie
+        // HeartRateManager, żeby tętno było dostępne podczas treningu.
     }
 }

@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.vbt.app.data.local.MIGRATION_1_2
+import com.vbt.app.data.local.MIGRATION_2_3
 import com.vbt.app.data.local.VbtDatabase
 import com.vbt.app.data.local.dao.*
 import com.vbt.app.data.local.entity.ExerciseDefinitionEntity
@@ -30,7 +31,7 @@ object DatabaseModule {
             VbtDatabase::class.java,
             "vbt_database"
         )
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)

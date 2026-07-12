@@ -5,5 +5,7 @@ enum class BleConnectionState {
     SCANNING,
     CONNECTING,
     CONNECTED,
-    DISCONNECTING
+    DISCONNECTING,
+    // Niezamierzone rozłączenie - trwa automatyczna próba wznowienia połączenia
+    RECONNECTING
 }

@@ -21,7 +21,12 @@ data class RepResultEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val sessionSetId: Long,
     val repNumber: Int,
+    // Historycznie: średnia prędkość koncentryczna (mean velocity) - nazwa
+    // kolumny zachowana dla kompatybilności istniejących baz.
     val maxVelocityMs: Float,
+    // Prędkość szczytowa (peak); 0 dla rekordów sprzed migracji / starego
+    // firmware - wtedy przy synchronizacji używany jest fallback maxVelocityMs.
+    val peakVelocityMs: Float = 0f,
     val distanceM: Float,
     val durationMs: Int,
     val powerW: Float,

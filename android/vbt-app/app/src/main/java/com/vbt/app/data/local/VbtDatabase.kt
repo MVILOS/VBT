@@ -15,6 +15,16 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // Peak velocity per powtórzenie (0 = brak danych ze starego firmware)
+        database.execSQL("ALTER TABLE rep_results ADD COLUMN peakVelocityMs REAL NOT NULL DEFAULT 0")
+        // Tętno per sesja (nullable - HR opcjonalne)
+        database.execSQL("ALTER TABLE workout_sessions ADD COLUMN avgHeartRate INTEGER")
+        database.execSQL("ALTER TABLE workout_sessions ADD COLUMN maxHeartRate INTEGER")
+    }
+}
+
 @Database(
     entities = [
         ExerciseDefinitionEntity::class,
@@ -25,7 +35,7 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         SessionSetEntity::class,
         RepResultEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class VbtDatabase : RoomDatabase() {
