@@ -207,14 +207,23 @@ fun WorkoutScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (state.connectionState == BleConnectionState.CONNECTING) {
+                                if (state.connectionState == BleConnectionState.CONNECTING ||
+                                    state.connectionState == BleConnectionState.RECONNECTING
+                                ) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
                                         strokeWidth = 2.dp,
                                         color = Color.White
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Łączenie...", color = Color.White, fontSize = 12.sp)
+                                    Text(
+                                        if (state.connectionState == BleConnectionState.RECONNECTING)
+                                            "Wznawianie połączenia..."
+                                        else
+                                            "Łączenie...",
+                                        color = Color.White,
+                                        fontSize = 12.sp
+                                    )
                                 } else {
                                     Icon(
                                         Icons.Default.Warning,
@@ -261,6 +270,49 @@ fun WorkoutScreen(
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyMedium
                             )
+                        }
+                    }
+                }
+
+                // Auto-finish countdown banner (cel serii osiągnięty)
+                if (state.autoFinishCountdown != null && state.mode == WorkoutMode.ACTIVE) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = VbtTeal
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Check,
+                                    null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Cel osiągnięty - koniec serii za ${state.autoFinishCountdown} s",
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            TextButton(
+                                onClick = { viewModel.cancelAutoFinish() },
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    "Anuluj",
+                                    color = Color.White,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }

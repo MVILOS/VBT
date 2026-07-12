@@ -14,10 +14,13 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -26,6 +29,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.vbt.app.data.local.PreferencesManager
+import com.vbt.app.data.remote.SessionExpiredNotifier
 import com.vbt.app.ui.screen.analytics.AnalyticsScreen
 import com.vbt.app.ui.screen.athletes.AthleteListScreen
 import com.vbt.app.ui.screen.athletes.AthleteProfileScreen
@@ -65,12 +69,31 @@ object Routes {
 }
 
 @Composable
-fun VbtNavGraph(preferencesManager: PreferencesManager) {
+fun VbtNavGraph(
+    preferencesManager: PreferencesManager,
+    sessionExpiredNotifier: SessionExpiredNotifier? = null
+) {
     val navController = rememberNavController()
     val isLoggedIn by preferencesManager.isLoggedIn().collectAsState(initial = false)
     val userRole by preferencesManager.getRole().collectAsState(initial = null)
 
     val startDestination = if (isLoggedIn) Routes.HOME else Routes.LOGIN
+
+    // Reakcja na 401 z API: token wyczyszczony przez interceptor,
+    // przekieruj na logowanie z komunikatem.
+    val context = LocalContext.current
+    LaunchedEffect(sessionExpiredNotifier) {
+        sessionExpiredNotifier?.events?.collect {
+            Toast.makeText(
+                context,
+                "Sesja wygasła, zaloguj się ponownie",
+                Toast.LENGTH_LONG
+            ).show()
+            navController.navigate(Routes.LOGIN) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Routes.LOGIN) {

@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
@@ -85,6 +87,11 @@ fun HistoryScreen(
                     onResume = onResumeSession,
                     onDiscard = { sessionId -> viewModel.deleteActiveSession(sessionId) }
                 )
+            }
+
+            // Sesje zakończone offline czekające na synchronizację z serwerem
+            if (uiState.unsyncedSessions.isNotEmpty()) {
+                UnsyncedSessionsBanner(sessions = uiState.unsyncedSessions)
             }
 
             when {
@@ -202,6 +209,58 @@ private fun ActiveSessionsBanner(
                             Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error)
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun UnsyncedSessionsBanner(sessions: List<WorkoutSessionEntity>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = "Oczekują na synchronizację",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        sessions.forEach { session ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = formatDateTimePolish(session.startedAt),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "Zapisano lokalnie - wyśle się automatycznie",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(
+                        Icons.Default.CloudOff,
+                        contentDescription = "Niezsynchronizowana",
+                        tint = Color(0xFFFF9800),
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
@@ -350,11 +409,21 @@ private fun SessionCard(
 
                 Column(horizontalAlignment = Alignment.End) {
                     val repCount = session.reps?.size ?: 0
-                    Text(
-                        text = "$repCount powtórzeń",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Sesja z serwera = zsynchronizowana
+                        Icon(
+                            Icons.Default.Cloud,
+                            contentDescription = "Zsynchronizowana",
+                            tint = VbtTeal.copy(alpha = 0.7f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "$repCount powtórzeń",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
 
                     if (session.durationSeconds != null) {
                         Text(

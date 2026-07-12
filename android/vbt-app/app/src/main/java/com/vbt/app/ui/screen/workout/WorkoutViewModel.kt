@@ -1,26 +1,32 @@
 package com.vbt.app.ui.screen.workout
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vbt.app.data.ble.BleConnectionState
+import com.vbt.app.data.ble.HeartRateManager
 import com.vbt.app.data.ble.RepFromDevice
 import com.vbt.app.data.ble.VbtBleManager
 import com.vbt.app.data.local.entity.*
 import com.vbt.app.data.remote.ApiService
-import com.vbt.app.data.remote.AppendRepsRequest
 import com.vbt.app.data.remote.ExerciseDto
 import com.vbt.app.data.remote.RepResultDto
-import com.vbt.app.data.remote.StartLiveSessionRequest
 import com.vbt.app.data.remote.TrainingPlanDto
 import com.vbt.app.data.remote.UserDto
 import com.vbt.app.data.repository.AuthRepository
 import com.vbt.app.data.repository.ExerciseRepository
 import com.vbt.app.data.repository.TrainingPlanRepository
 import com.vbt.app.data.repository.WorkoutRepository
+import com.vbt.app.data.sync.SessionSyncWorker
+import com.vbt.app.data.sync.WorkoutSyncManager
 import com.vbt.app.domain.model.VelocityZone
 import com.vbt.app.domain.usecase.CalculatePowerUseCase
+import com.vbt.app.domain.usecase.Estimate1RMUseCase
+import com.vbt.app.service.WorkoutForegroundService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.time.Instant
@@ -101,6 +107,8 @@ data class WorkoutUiState(
     // Set state
     val isPaused: Boolean = false,
     val setFinished: Boolean = false,
+    // Odliczanie (sekundy) do automatycznego zamknięcia serii; null = nieaktywne
+    val autoFinishCountdown: Int? = null,
 
     // All reps history (all sets)
     val allReps: List<RepResultEntity> = emptyList(),
@@ -127,14 +135,24 @@ data class WorkoutUiState(
 @HiltViewModel
 class WorkoutViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    @ApplicationContext private val appContext: Context,
     private val workoutRepository: WorkoutRepository,
     private val planRepository: TrainingPlanRepository,
     private val exerciseRepository: ExerciseRepository,
     private val authRepository: AuthRepository,
     private val bleManager: VbtBleManager,
+    private val heartRateManager: HeartRateManager,
     private val calculatePower: CalculatePowerUseCase,
+    private val estimate1RM: Estimate1RMUseCase,
+    private val syncManager: WorkoutSyncManager,
     private val api: ApiService
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "WorkoutViewModel"
+        // Czas (s) od osiągnięcia targetReps do automatycznego zamknięcia serii
+        private const val AUTO_FINISH_SECONDS = 10
+    }
 
     // Local Room session (always created at workout start for crash safety)
     private var localSessionId: Long = 0
@@ -144,8 +162,11 @@ class WorkoutViewModel @Inject constructor(
     private var currentLocalExerciseId: Long = 0
     // Server-assigned session ID (null when offline)
     private var serverSessionId: Int? = null
-    // Reps collected since last server push (pending for next finishSet or finishWorkout)
-    private val pendingServerReps = mutableListOf<RepResultDto>()
+
+    // Statystyki tętna bieżącej sesji (zapisywane do Room przy finishWorkout)
+    private var hrSum: Long = 0
+    private var hrCount: Int = 0
+    private var hrMax: Int = 0
 
     // Resume: when navigated from History with an existing session
     private val resumeSessionId: Long = savedStateHandle.get<Long>("resumeSessionId") ?: 0L
@@ -166,7 +187,8 @@ class WorkoutViewModel @Inject constructor(
             // żeby trening dało się zacząć natychmiast nawet bez sieci.
             val localExercises = try {
                 exerciseRepository.getAllExercises().first().map { it.toExerciseDto() }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.w(TAG, "Nie można wczytać lokalnej bazy ćwiczeń", e)
                 emptyList()
             }
             _uiState.update { it.copy(availableExercises = listOf(FREE_MEASUREMENT_EXERCISE) + localExercises) }
@@ -176,7 +198,8 @@ class WorkoutViewModel @Inject constructor(
             try {
                 val dtoExercises = api.getExercises().body() ?: emptyList()
                 _uiState.update { it.copy(availableExercises = listOf(FREE_MEASUREMENT_EXERCISE) + dtoExercises) }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.w(TAG, "Nie można odświeżyć ćwiczeń z serwera", e)
                 if (localExercises.isEmpty()) {
                     _uiState.update { it.copy(error = "Brak połączenia z serwerem - dostępna tylko lokalna baza ćwiczeń") }
                 }
@@ -191,7 +214,9 @@ class WorkoutViewModel @Inject constructor(
                     try {
                         val athletes = api.getAthletes().body() ?: emptyList()
                         _uiState.update { it.copy(availableAthletes = athletes) }
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Nie można pobrać listy zawodników", e)
+                    }
                 }
             }
         }
@@ -218,6 +243,35 @@ class WorkoutViewModel @Inject constructor(
             bleManager.isLifting.collect { lifting ->
                 _uiState.update { it.copy(isRepInProgress = lifting) }
             }
+        }
+
+        // Tętno ze współdzielonego HeartRateManager (połączenie zarządzane
+        // z ekranu Connect) - płynie do UI treningu i statystyk sesji.
+        viewModelScope.launch {
+            heartRateManager.heartRate.collect { hr ->
+                _uiState.update { it.copy(heartRate = hr) }
+                if (hr != null && hr > 0 && _uiState.value.mode == WorkoutMode.ACTIVE) {
+                    hrSum += hr
+                    hrCount++
+                    if (hr > hrMax) hrMax = hr
+                }
+            }
+        }
+
+        // Foreground service utrzymujący BLE przy życiu podczas aktywnego treningu
+        viewModelScope.launch {
+            _uiState
+                .map { Triple(it.mode, it.currentExerciseName, it.completedRepsInSet.size) }
+                .distinctUntilChanged()
+                .collect { (mode, exerciseName, repCount) ->
+                    when (mode) {
+                        WorkoutMode.ACTIVE ->
+                            WorkoutForegroundService.start(appContext, exerciseName, repCount)
+                        WorkoutMode.FINISHED, WorkoutMode.IDLE ->
+                            WorkoutForegroundService.stop(appContext)
+                        else -> Unit
+                    }
+                }
         }
 
         repCollectionJob = viewModelScope.launch {
@@ -360,6 +414,7 @@ class WorkoutViewModel @Inject constructor(
         viewModelScope.launch {
             _currentVelocityBuffer.value.clear()
             peakVelocity = 0f
+            resetHeartRateStats()
 
             val athleteId = _uiState.value.sessionAthleteId
 
@@ -402,6 +457,7 @@ class WorkoutViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val athleteId = _uiState.value.sessionAthleteId
+                resetHeartRateStats()
 
                 // Create local session for crash-safety
                 localSessionId = workoutRepository.createActiveSession(null, athleteId)
@@ -478,13 +534,15 @@ class WorkoutViewModel @Inject constructor(
             val state = _uiState.value
             if (state.isPaused || state.mode != WorkoutMode.ACTIVE) return@launch
 
-            val power = calculatePower.calculatePeakPower(state.currentLoadKg, rep.maxVelocityMs)
+            val power = calculatePower.calculatePeakPower(state.currentLoadKg, rep.peakVelocityMs)
+            val repNumber = state.completedRepsInSet.size + 1
 
             val repEntity = RepResultEntity(
                 id = 0,
                 sessionSetId = currentSetId,
-                repNumber = state.completedRepsInSet.size + 1,
-                maxVelocityMs = rep.maxVelocityMs,
+                repNumber = repNumber,
+                maxVelocityMs = rep.meanVelocityMs,
+                peakVelocityMs = rep.peakVelocityMs,
                 distanceM = rep.distanceM,
                 durationMs = rep.durationMs,
                 powerW = power,
@@ -498,8 +556,9 @@ class WorkoutViewModel @Inject constructor(
             if (currentSetId > 0) {
                 workoutRepository.addRep(
                     sessionSetId = currentSetId,
-                    repNumber = repEntity.repNumber,
-                    maxVelocityMs = rep.maxVelocityMs,
+                    repNumber = repNumber,
+                    meanVelocityMs = rep.meanVelocityMs,
+                    peakVelocityMs = rep.peakVelocityMs,
                     distanceM = rep.distanceM,
                     durationMs = rep.durationMs,
                     powerW = power,
@@ -511,19 +570,19 @@ class WorkoutViewModel @Inject constructor(
             // Queue for live server push (resolve/auto-create matching server exercise)
             val servId = serverSessionId
             if (servId != null) {
-                val serverEx = resolveServerExercise(state.currentExerciseName, category = null)
+                val serverEx = syncManager.resolveServerExercise(state.currentExerciseName, category = null)
                 if (serverEx != null) {
-                    pendingServerReps.add(RepResultDto(
+                    syncManager.queueRep(RepResultDto(
                         id = null,
                         sessionId = servId,
                         exerciseId = serverEx.id,
                         setNumber = state.currentSetIndex + 1,
-                        repNumber = repEntity.repNumber,
-                        meanVelocity = rep.maxVelocityMs.toDouble(),
-                        peakVelocity = rep.maxVelocityMs.toDouble(),
+                        repNumber = repNumber,
+                        meanVelocity = rep.meanVelocityMs.toDouble(),
+                        peakVelocity = rep.peakVelocityMs.toDouble(),
                         loadKg = state.currentLoadKg.toDouble(),
                         powerWatts = power.toDouble(),
-                        estimated1rm = calculateEstimated1RM(state.currentLoadKg, repEntity.repNumber),
+                        estimated1rm = estimate1RM.estimate(state.currentLoadKg, rep.meanVelocityMs, repNumber),
                         timestamp = null
                     ))
                 }
@@ -532,7 +591,7 @@ class WorkoutViewModel @Inject constructor(
             _uiState.update { current ->
                 current.copy(
                     completedRepsInSet = current.completedRepsInSet + repEntity,
-                    peakVelocity = maxOf(current.peakVelocity, rep.maxVelocityMs),
+                    peakVelocity = maxOf(current.peakVelocity, rep.peakVelocityMs),
                     allReps = current.allReps + repEntity
                 )
             }
@@ -584,13 +643,13 @@ class WorkoutViewModel @Inject constructor(
     fun togglePause() {
         val wasPaused = _uiState.value.isPaused
         if (!wasPaused) {
-            autoFinishJob?.cancel()
+            cancelAutoFinish()
         }
         _uiState.update { it.copy(isPaused = !wasPaused) }
     }
 
     fun finishSet() {
-        autoFinishJob?.cancel()
+        cancelAutoFinish()
         val state = _uiState.value
         val snapshot = CompletedSetSnapshot(
             setNumber = state.currentSetIndex + 1,
@@ -606,10 +665,8 @@ class WorkoutViewModel @Inject constructor(
             }
 
             // Push pending reps to server live
-            val servId = serverSessionId
-            if (servId != null && pendingServerReps.isNotEmpty()) {
-                pushRepsToServer(servId, pendingServerReps.toList())
-                pendingServerReps.clear()
+            serverSessionId?.let { servId ->
+                syncManager.flushPendingReps(servId)
             }
 
             // Create next set in Room
@@ -625,13 +682,14 @@ class WorkoutViewModel @Inject constructor(
                 completedRepsInSet = emptyList(),
                 peakVelocity = 0f,
                 setFinished = true,
+                autoFinishCountdown = null,
                 currentSetIndex = it.currentSetIndex + 1
             )
         }
     }
 
     fun finishWorkout() {
-        autoFinishJob?.cancel()
+        cancelAutoFinish()
         viewModelScope.launch {
             val state = _uiState.value
 
@@ -643,36 +701,60 @@ class WorkoutViewModel @Inject constructor(
             // Update session status to finished in Room
             if (localSessionId > 0) {
                 workoutRepository.finishSession(localSessionId)
+                // Zapisz statystyki tętna (tylko lokalnie - backend nie ma pól HR)
+                if (hrCount > 0) {
+                    workoutRepository.updateSessionHeartRate(
+                        sessionId = localSessionId,
+                        avgHeartRate = (hrSum / hrCount).toInt(),
+                        maxHeartRate = hrMax
+                    )
+                }
             }
 
             // Finalize server session
             val servId = serverSessionId
             if (servId != null) {
                 // Collect any remaining in-progress reps (resolve/auto-create matching server exercise)
-                val serverEx = resolveServerExercise(state.currentExerciseName, category = null)
-                if (serverEx != null && state.completedRepsInSet.isNotEmpty()) {
-                    state.completedRepsInSet.forEach { rep ->
-                        pendingServerReps.add(RepResultDto(
-                            id = null, sessionId = servId,
-                            exerciseId = serverEx.id,
-                            setNumber = state.currentSetIndex + 1,
-                            repNumber = rep.repNumber,
-                            meanVelocity = rep.maxVelocityMs.toDouble(),
-                            peakVelocity = rep.maxVelocityMs.toDouble(),
-                            loadKg = state.currentLoadKg.toDouble(),
-                            powerWatts = rep.powerW.toDouble(),
-                            estimated1rm = calculateEstimated1RM(state.currentLoadKg, rep.repNumber),
-                            timestamp = null
-                        ))
+                if (state.completedRepsInSet.isNotEmpty()) {
+                    val serverEx = syncManager.resolveServerExercise(state.currentExerciseName, category = null)
+                    if (serverEx != null) {
+                        state.completedRepsInSet.forEach { rep ->
+                            syncManager.queueRep(RepResultDto(
+                                id = null, sessionId = servId,
+                                exerciseId = serverEx.id,
+                                setNumber = state.currentSetIndex + 1,
+                                repNumber = rep.repNumber,
+                                meanVelocity = rep.maxVelocityMs.toDouble(),
+                                peakVelocity = effectivePeak(rep).toDouble(),
+                                loadKg = state.currentLoadKg.toDouble(),
+                                powerWatts = rep.powerW.toDouble(),
+                                estimated1rm = estimate1RM.estimate(
+                                    state.currentLoadKg,
+                                    rep.maxVelocityMs,
+                                    state.completedRepsInSet.size
+                                ),
+                                timestamp = null
+                            ))
+                        }
                     }
                 }
                 // Push final reps + mark session as finished
                 val now = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-                pushRepsToServer(servId, pendingServerReps.toList(), finishedAt = now)
-                pendingServerReps.clear()
+                val flushed = syncManager.flushPendingReps(servId, finishedAt = now)
+                if (!flushed) {
+                    Log.w(TAG, "finishWorkout: nie udało się domknąć sesji live $servId na serwerze")
+                    _uiState.update { it.copy(error = "Nie udało się wysłać końcówki treningu - dane są zapisane lokalnie") }
+                }
             } else {
-                // No live session on server – do a full sync now
-                syncToServer()
+                // No live session on server – do a full sync now (from Room)
+                val synced = localSessionId > 0 && syncManager.syncSession(localSessionId)
+                if (!synced) {
+                    Log.w(TAG, "finishWorkout: synchronizacja offline nieudana - kolejkuję SessionSyncWorker")
+                    SessionSyncWorker.enqueue(appContext)
+                    _uiState.update {
+                        it.copy(error = "Brak połączenia - trening zapisany lokalnie, zostanie zsynchronizowany automatycznie")
+                    }
+                }
             }
 
             _uiState.update { it.copy(mode = WorkoutMode.FINISHED) }
@@ -680,7 +762,7 @@ class WorkoutViewModel @Inject constructor(
     }
 
     fun discardWorkout() {
-        autoFinishJob?.cancel()
+        cancelAutoFinish()
         viewModelScope.launch {
             // Delete from Room
             if (localSessionId > 0) {
@@ -689,16 +771,20 @@ class WorkoutViewModel @Inject constructor(
             }
             // Delete from server
             serverSessionId?.let { servId ->
-                try { api.deleteSession(servId) } catch (_: Exception) {}
+                try {
+                    api.deleteSession(servId)
+                } catch (e: Exception) {
+                    Log.w(TAG, "discardWorkout: nie można usunąć sesji $servId z serwera", e)
+                }
                 serverSessionId = null
             }
-            pendingServerReps.clear()
+            syncManager.clearPendingReps()
         }
         _uiState.update { it.copy(mode = WorkoutMode.FINISHED) }
     }
 
     fun requestExerciseChange() {
-        autoFinishJob?.cancel()
+        cancelAutoFinish()
         _uiState.update { it.copy(showChangeExercise = true, isPaused = true) }
     }
 
@@ -779,106 +865,28 @@ class WorkoutViewModel @Inject constructor(
 
     private fun launchLiveSessionStart(planId: Int?, athleteId: Int?) {
         viewModelScope.launch {
-            try {
-                val request = StartLiveSessionRequest(
-                    athleteId = athleteId,
-                    planId = planId,
-                    notes = null
-                )
-                val response = api.startLiveSession(request)
-                if (response.isSuccessful) {
-                    val servId = response.body()?.id
-                    if (servId != null) {
-                        serverSessionId = servId
-                        workoutRepository.updateServerSessionId(localSessionId, servId)
-                    }
-                }
-            } catch (_: Exception) {
-                // Offline – session will be synced on finishWorkout
-            }
+            serverSessionId = syncManager.startLiveSession(localSessionId, planId, athleteId)
         }
-    }
-
-    private suspend fun pushRepsToServer(servId: Int, reps: List<RepResultDto>, finishedAt: String? = null) {
-        if (reps.isEmpty() && finishedAt == null) return
-        try {
-            api.appendReps(servId, AppendRepsRequest(reps = reps, finishedAt = finishedAt))
-        } catch (_: Exception) {
-            // Non-critical; reps are saved locally
-        }
-    }
-
-    private suspend fun syncToServer() {
-        try {
-            val state = _uiState.value
-            val serverExercises = api.getExercises().body() ?: emptyList()
-            _uiState.update { it.copy(availableExercises = listOf(FREE_MEASUREMENT_EXERCISE) + serverExercises) }
-
-            val allReps = mutableListOf<RepResultDto>()
-
-            for (snapshot in state.completedSets) {
-                // Dopasuj po nazwie; jeśli ćwiczenie nie istnieje jeszcze na serwerze
-                // (np. lokalny "Wolny pomiar" albo własne ćwiczenie), utwórz je.
-                val serverEx = resolveServerExercise(snapshot.exerciseName, category = null) ?: continue
-                snapshot.reps.forEach { rep ->
-                    allReps.add(RepResultDto(
-                        id = null, sessionId = null,
-                        exerciseId = serverEx.id,
-                        setNumber = snapshot.setNumber,
-                        repNumber = rep.repNumber,
-                        meanVelocity = rep.maxVelocityMs.toDouble(),
-                        peakVelocity = rep.maxVelocityMs.toDouble(),
-                        loadKg = snapshot.loadKg.toDouble(),
-                        powerWatts = rep.powerW.toDouble(),
-                        estimated1rm = calculateEstimated1RM(snapshot.loadKg, rep.repNumber),
-                        timestamp = null
-                    ))
-                }
-            }
-
-            if (state.completedRepsInSet.isNotEmpty()) {
-                val serverEx = resolveServerExercise(state.currentExerciseName, category = null)
-                if (serverEx != null) {
-                    state.completedRepsInSet.forEach { rep ->
-                        allReps.add(RepResultDto(
-                            id = null, sessionId = null,
-                            exerciseId = serverEx.id,
-                            setNumber = state.currentSetIndex + 1,
-                            repNumber = rep.repNumber,
-                            meanVelocity = rep.maxVelocityMs.toDouble(),
-                            peakVelocity = rep.maxVelocityMs.toDouble(),
-                            loadKg = state.currentLoadKg.toDouble(),
-                            powerWatts = rep.powerW.toDouble(),
-                            estimated1rm = calculateEstimated1RM(state.currentLoadKg, rep.repNumber),
-                            timestamp = null
-                        ))
-                    }
-                }
-            }
-
-            if (allReps.isNotEmpty()) {
-                val payload = com.vbt.app.data.remote.CreateSessionRequest(
-                    athleteId = state.sessionAthleteId ?: 0,
-                    planId = state.selectedPlan?.id,
-                    calendarEntryId = null,
-                    notes = state.selectedPlan?.name,
-                    reps = allReps
-                )
-                api.createSession(payload)
-            }
-        } catch (_: Exception) {}
-    }
-
-    private fun calculateEstimated1RM(weight: Float, reps: Int): Double {
-        return (weight * (1 + reps / 30.0)).toDouble()
     }
 
     // ==================== Helpers ====================
 
+    // Rekordy sprzed peak velocity (stary firmware / stara baza) mają
+    // peakVelocityMs == 0 - wtedy najlepszym przybliżeniem jest mean velocity.
+    private fun effectivePeak(rep: RepResultEntity): Float =
+        if (rep.peakVelocityMs > 0f) rep.peakVelocityMs else rep.maxVelocityMs
+
+    private fun resetHeartRateStats() {
+        hrSum = 0
+        hrCount = 0
+        hrMax = 0
+    }
+
     // Mapuje lokalną encję Room na ExerciseDto (sam kształt UI używa), żeby
     // exercise picker mógł działać w pełni offline. id jest ujemne (-localId)
     // aby oznaczyć "brak potwierdzonego ID serwera" - nie jest używane do
-    // wysyłki powtórzeń (patrz resolveServerExercise), więc kolizje nie mają znaczenia.
+    // wysyłki powtórzeń (patrz WorkoutSyncManager.resolveServerExercise),
+    // więc kolizje nie mają znaczenia.
     private fun ExerciseDefinitionEntity.toExerciseDto(): ExerciseDto = ExerciseDto(
         id = -id.toInt(),
         name = name,
@@ -887,41 +895,31 @@ class WorkoutViewModel @Inject constructor(
         description = null
     )
 
-    // Znajduje ćwiczenie po nazwie w cache'u availableExercises; jeśli go tam
-    // nie ma, a jesteśmy online, tworzy je na serwerze przez istniejący endpoint
-    // POST /api/exercises (dostępny dla każdego zalogowanego użytkownika - patrz
-    // server/backend/app/api/exercises.py) i dopisuje do cache'u. Używane m.in.
-    // dla sentinela "Wolny pomiar (bez ćwiczenia)", który przy pierwszym online
-    // sync dostaje realne exercise_id na serwerze. Zwraca null gdy offline -
-    // powtórzenia zostają wtedy zapisane wyłącznie lokalnie w Room.
-    private suspend fun resolveServerExercise(name: String, category: String?): ExerciseDto? {
-        val cached = _uiState.value.availableExercises.find { it.name.equals(name, ignoreCase = true) && it.id > 0 }
-        if (cached != null) return cached
-        return try {
-            val response = api.createExercise(
-                com.vbt.app.data.remote.CreateExerciseRequest(name = name, category = category, mvt = null, description = null)
-            )
-            val created = response.body()
-            if (created != null) {
-                _uiState.update { it.copy(availableExercises = it.availableExercises + created) }
-            }
-            created
-        } catch (_: Exception) {
-            null
-        }
-    }
-
+    // Auto-zamykanie serii: po osiągnięciu targetReps odlicza AUTO_FINISH_SECONDS
+    // sekund (widoczne w UI z przyciskiem "Anuluj"); nowe powtórzenie resetuje
+    // odliczanie (ponowne wywołanie), a cancelAutoFinish() je przerywa.
     private fun resetAutoFinishTimer() {
         autoFinishJob?.cancel()
         autoFinishJob = viewModelScope.launch {
-            delay(2000)
+            for (remaining in AUTO_FINISH_SECONDS downTo 1) {
+                _uiState.update { it.copy(autoFinishCountdown = remaining) }
+                delay(1000)
+            }
+            _uiState.update { it.copy(autoFinishCountdown = null) }
             finishSet()
         }
+    }
+
+    fun cancelAutoFinish() {
+        autoFinishJob?.cancel()
+        autoFinishJob = null
+        _uiState.update { it.copy(autoFinishCountdown = null) }
     }
 
     override fun onCleared() {
         super.onCleared()
         autoFinishJob?.cancel()
         repCollectionJob?.cancel()
+        WorkoutForegroundService.stop(appContext)
     }
 }

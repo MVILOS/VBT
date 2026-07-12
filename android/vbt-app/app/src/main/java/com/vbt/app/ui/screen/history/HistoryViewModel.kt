@@ -19,6 +19,8 @@ data class HistoryUiState(
     val sessions: List<WorkoutSessionDto> = emptyList(),
     // Local sessions that are still active (interrupted, not yet finished/discarded)
     val activeSessions: List<WorkoutSessionEntity> = emptyList(),
+    // Sesje zakończone lokalnie, ale jeszcze nie wysłane na serwer
+    val unsyncedSessions: List<WorkoutSessionEntity> = emptyList(),
     val athletes: List<UserDto> = emptyList(),
     val selectedAthleteId: Int? = null,
     val isCoach: Boolean = false,
@@ -102,7 +104,11 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val active = workoutRepository.getActiveSessions()
-                _uiState.value = _uiState.value.copy(activeSessions = active)
+                val unsynced = workoutRepository.getUnsyncedSessions()
+                _uiState.value = _uiState.value.copy(
+                    activeSessions = active,
+                    unsyncedSessions = unsynced
+                )
             } catch (_: Exception) {}
         }
     }

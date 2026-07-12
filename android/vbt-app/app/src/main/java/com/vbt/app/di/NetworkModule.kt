@@ -1,8 +1,10 @@
 package com.vbt.app.di
 
 import android.content.Context
+import com.vbt.app.BuildConfig
 import com.vbt.app.data.local.PreferencesManager
 import com.vbt.app.data.remote.ApiService
+import com.vbt.app.data.remote.SessionExpiredNotifier
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,9 +35,18 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(preferencesManager: PreferencesManager): OkHttpClient {
+    fun provideOkHttpClient(
+        preferencesManager: PreferencesManager,
+        sessionExpiredNotifier: SessionExpiredNotifier
+    ): OkHttpClient {
+        // Pełne logowanie request/response tylko w DEBUG - w release logi HTTP
+        // (tokeny, dane użytkowników) nie mogą trafiać do logcat.
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
 
         val jwtInterceptor = Interceptor { chain ->
@@ -54,8 +65,22 @@ object NetworkModule {
             chain.proceed(requestBuilder.build())
         }
 
+        // 401 poza endpointami logowania/rejestracji = token wygasł/nieprawidłowy:
+        // czyścimy sesję i sygnalizujemy UI konieczność ponownego logowania.
+        val sessionExpiryInterceptor = Interceptor { chain ->
+            val response = chain.proceed(chain.request())
+            val path = chain.request().url.encodedPath
+            val isAuthEndpoint = path.contains("/auth/login") || path.contains("/auth/register")
+            if (response.code == 401 && !isAuthEndpoint) {
+                runBlocking { preferencesManager.clear() }
+                sessionExpiredNotifier.notifyExpired()
+            }
+            response
+        }
+
         return OkHttpClient.Builder()
             .addInterceptor(jwtInterceptor)
+            .addInterceptor(sessionExpiryInterceptor)
             .addInterceptor(loggingInterceptor)
             .build()
     }
