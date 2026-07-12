@@ -5,8 +5,12 @@
     odrzuci połączenie HTTPS. Ten certyfikat jest jawnie dopięty (pinned) jako
     zaufana kotwica wyłącznie dla tego hosta - to bezpieczniejsze niż globalne
     "ufaj wszystkim certyfikatom" (trust-all TrustManager).
-    Certyfikat wygasa 2027-06-21 - po tej dacie backend musi wystawić nowy
+    Certyfikat wygasa 2028-07-11 - po tej dacie backend musi wystawić nowy
     certyfikat i plik res/raw/vbt_server_cert.pem trzeba będzie zaktualizować.
+    (Regenerowany 2026-07-12: pierwotny certyfikat nie miał pola
+    Subject Alternative Name, tylko przestarzałe CN - nowoczesna weryfikacja
+    hostname w OkHttp/Android odrzucała połączenie mimo poprawnego pinningu.
+    Nowy ma subjectAltName=IP:130.61.232.212.)
 -->
 <network-security-config>
     <domain-config>
