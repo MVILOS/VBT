@@ -46,6 +46,17 @@ def resolve_athlete_id(
     return athlete_id
 
 
+def check_session_access(session: WorkoutSession, current_user: User, db: Session) -> None:
+    """Dostęp: właściciel sesji, admin, lub trener faktycznie nadzorujący tego zawodnika."""
+    if session.athlete_id == current_user.id or current_user.role == "admin":
+        return
+    if current_user.role == "coach" and db.query(AthleteCoach).filter_by(
+        coach_id=current_user.id, athlete_id=session.athlete_id
+    ).first():
+        return
+    raise HTTPException(status_code=403, detail="Access denied")
+
+
 @router.get("/velocity-trend")
 def velocity_trend(
     athlete_id: Optional[int] = Query(None),
@@ -180,9 +191,7 @@ def session_detail(
     session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    # Athletes can only see their own sessions
-    if current_user.role == "athlete" and session.athlete_id != current_user.id:
-        raise HTTPException(status_code=403)
+    check_session_access(session, current_user, db)
 
     reps = (
         db.query(RepResult, ExerciseDefinition)
@@ -312,13 +321,10 @@ def fatigue_index(
     FI 10-20%→ wysokie (typowe dla akumulacji)
     FI > 20% → przekroczony próg — rozważ zatrzymanie
     """
-    resolve_athlete_id(athlete_id, current_user, db)  # walidacja uprawnień
-
     session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    if current_user.role == "athlete" and session.athlete_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    check_session_access(session, current_user, db)
 
     q = (
         db.query(RepResult, ExerciseDefinition)

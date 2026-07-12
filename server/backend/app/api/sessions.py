@@ -20,6 +20,17 @@ from app.core.security import get_current_user
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
+def check_session_access(session: WorkoutSession, current_user: User, db: Session) -> None:
+    """Dostęp: właściciel sesji, admin, lub trener faktycznie nadzorujący tego zawodnika."""
+    if session.athlete_id == current_user.id or current_user.role == "admin":
+        return
+    if current_user.role == "coach" and db.query(AthleteCoach).filter_by(
+        coach_id=current_user.id, athlete_id=session.athlete_id
+    ).first():
+        return
+    raise HTTPException(status_code=403, detail="Access denied")
+
+
 @router.get("", response_model=List[WorkoutSessionResponse])
 def list_sessions(
     athlete_id: Optional[int] = Query(None),
@@ -157,8 +168,7 @@ def append_reps(
     session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    if session.athlete_id != current_user.id and current_user.role != "coach":
-        raise HTTPException(status_code=403, detail="Access denied")
+    check_session_access(session, current_user, db)
 
     for rep in data.reps:
         db.add(RepResult(
@@ -194,8 +204,7 @@ def delete_session(
     session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    if session.athlete_id != current_user.id and current_user.role != "coach":
-        raise HTTPException(status_code=403, detail="Access denied")
+    check_session_access(session, current_user, db)
     db.delete(session)
     db.commit()
 
@@ -209,8 +218,7 @@ def get_session(
     session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    if session.athlete_id != current_user.id and current_user.role != "coach":
-        raise HTTPException(status_code=403, detail="Access denied")
+    check_session_access(session, current_user, db)
     return WorkoutSessionResponse.model_validate(session)
 
 
@@ -226,8 +234,7 @@ def save_velocity_trace(
     session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    if session.athlete_id != current_user.id and current_user.role != "coach":
-        raise HTTPException(status_code=403, detail="Access denied")
+    check_session_access(session, current_user, db)
 
     # Sprawdź czy rep istnieje
     rep = db.query(RepResult).filter(RepResult.id == rep_id, RepResult.session_id == session_id).first()
@@ -273,8 +280,7 @@ def get_velocity_trace(
     session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
-    if session.athlete_id != current_user.id and current_user.role != "coach":
-        raise HTTPException(status_code=403, detail="Access denied")
+    check_session_access(session, current_user, db)
 
     trace = db.query(RepVelocityTrace).filter(
         RepVelocityTrace.rep_result_id == rep_id,
