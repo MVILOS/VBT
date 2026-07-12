@@ -10,9 +10,9 @@ function getAthleteColor(athleteId: number) {
 }
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
-  scheduled: { bg: 'bg-blue-500/20', text: 'text-blue-300', label: 'Scheduled' },
-  completed:  { bg: 'bg-green-500/20', text: 'text-green-300', label: 'Done' },
-  skipped:    { bg: 'bg-red-500/20', text: 'text-red-300', label: 'Skipped' },
+  scheduled: { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Scheduled' },
+  completed:  { bg: 'bg-green-50', text: 'text-green-700', label: 'Done' },
+  skipped:    { bg: 'bg-red-50', text: 'text-red-700', label: 'Skipped' },
 }
 
 export default function CalendarPage() {
@@ -167,17 +167,17 @@ export default function CalendarPage() {
     }
   }
 
-  if (isLoading) return <div className="flex items-center justify-center h-96 text-gray-400">Loading...</div>
+  if (isLoading) return <div className="flex items-center justify-center h-96 text-gray-500">Loading...</div>
 
   return (
     <div className="flex gap-4 h-full">
       {/* Left sidebar */}
       <div className="w-48 flex-shrink-0">
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-gray-300 mb-3">Athletes</h3>
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Athletes</h3>
           <button
             onClick={() => setFilterAthlete('all')}
-            className={`w-full text-left px-3 py-2 rounded text-sm mb-1 transition-colors ${filterAthlete === 'all' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:bg-gray-700'}`}
+            className={`w-full text-left px-3 py-2 rounded text-sm mb-1 transition-colors ${filterAthlete === 'all' ? 'bg-violet-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
           >
             All Athletes
           </button>
@@ -185,15 +185,15 @@ export default function CalendarPage() {
             <button
               key={a.id}
               onClick={() => setFilterAthlete(String(a.id))}
-              className={`w-full text-left px-3 py-2 rounded text-sm mb-1 transition-colors flex items-center gap-2 ${filterAthlete === String(a.id) ? 'bg-gray-700' : 'text-gray-400 hover:bg-gray-700'}`}
+              className={`w-full text-left px-3 py-2 rounded text-sm mb-1 transition-colors flex items-center gap-2 ${filterAthlete === String(a.id) ? 'bg-gray-100' : 'text-gray-500 hover:bg-gray-100'}`}
             >
               <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getAthleteColor(a.id) }} />
               <span className="truncate">{a.username}</span>
             </button>
           ))}
         </div>
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 mt-3">
-          <h3 className="text-sm font-semibold text-gray-300 mb-3">Status</h3>
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mt-3">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Status</h3>
           {Object.entries(STATUS_STYLE).map(([key, val]) => (
             <div key={key} className="flex items-center gap-2 text-xs mb-1">
               <span className={`px-1.5 py-0.5 rounded text-xs ${val.bg} ${val.text}`}>{val.label}</span>
@@ -204,18 +204,18 @@ export default function CalendarPage() {
 
       {/* Main calendar */}
       <div className="flex-1 min-w-0">
-        {error && <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded text-red-200 text-sm">{error}</div>}
+        {error && <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded text-red-700 text-sm">{error}</div>}
 
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-white">Training Schedule</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Training Schedule</h1>
           <div className="flex items-center gap-3">
             <button onClick={() => setWeekStart(addDays(weekStart, -7))}
-              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm">← Prev</button>
-            <span className="text-gray-300 font-medium">
+              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded text-sm">← Prev</button>
+            <span className="text-gray-700 font-medium">
               {format(weekStart, 'MMM d')} — {format(addDays(weekStart, 6), 'MMM d, yyyy')}
             </span>
             <button onClick={() => setWeekStart(addDays(weekStart, 7))}
-              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm">Next →</button>
+              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded text-sm">Next →</button>
             <button onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
               className="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded text-sm">Today</button>
           </div>
@@ -228,11 +228,11 @@ export default function CalendarPage() {
             const isToday = isSameDay(day, new Date())
             return (
               <div key={dateStr} className="flex flex-col min-h-48">
-                <div className={`text-center py-2 mb-1 rounded-t-lg ${isToday ? 'bg-violet-600' : 'bg-gray-800 border border-gray-700'}`}>
-                  <div className={`text-xs font-medium ${isToday ? 'text-violet-200' : 'text-gray-400'}`}>{format(day, 'EEE')}</div>
-                  <div className={`text-lg font-bold ${isToday ? 'text-white' : 'text-gray-200'}`}>{format(day, 'd')}</div>
+                <div className={`text-center py-2 mb-1 rounded-t-lg ${isToday ? 'bg-violet-600' : 'bg-white border border-gray-200'}`}>
+                  <div className={`text-xs font-medium ${isToday ? 'text-violet-700' : 'text-gray-500'}`}>{format(day, 'EEE')}</div>
+                  <div className={`text-lg font-bold ${isToday ? 'text-gray-900' : 'text-gray-800'}`}>{format(day, 'd')}</div>
                 </div>
-                <div className="flex-1 bg-gray-800/50 border border-gray-700 rounded-b-lg p-1.5 space-y-1.5">
+                <div className="flex-1 bg-white/80 border border-gray-200 rounded-b-lg p-1.5 space-y-1.5">
                   {dayEntries.map(entry => {
                     const athlete = athletes.find(a => a.id === entry.athlete_id)
                     const color = getAthleteColor(entry.athlete_id)
@@ -240,9 +240,9 @@ export default function CalendarPage() {
                     const hasOverrides = !!entry.overrides_json
                     return (
                       <div key={entry.id} onClick={() => openEdit(entry)}
-                        className="cursor-pointer rounded p-1.5 border-l-2 bg-gray-700/60 hover:bg-gray-700 transition-colors"
+                        className="cursor-pointer rounded p-1.5 border-l-2 bg-gray-100 hover:bg-gray-100 transition-colors"
                         style={{ borderLeftColor: color }}>
-                        <div className="text-xs font-semibold text-gray-200 truncate">{entry.title}</div>
+                        <div className="text-xs font-semibold text-gray-800 truncate">{entry.title}</div>
                         {athlete && <div className="text-xs truncate mt-0.5" style={{ color }}>{athlete.username}</div>}
                         {entry.time_slot && <div className="text-xs text-gray-500 mt-0.5">{entry.time_slot}</div>}
                         <div className="flex items-center gap-1 mt-1">
@@ -253,7 +253,7 @@ export default function CalendarPage() {
                     )
                   })}
                   <button onClick={() => openAdd(dateStr)}
-                    className="w-full text-center text-xs text-gray-600 hover:text-violet-400 py-1 rounded hover:bg-gray-700/50 transition-colors">
+                    className="w-full text-center text-xs text-gray-600 hover:text-violet-600 py-1 rounded hover:bg-gray-100 transition-colors">
                     + Add
                   </button>
                 </div>
@@ -266,75 +266,75 @@ export default function CalendarPage() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl border border-gray-700 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-white mb-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
               {editingId ? 'Edytuj trening' : 'Dodaj trening'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Zawodnik *</label>
+                  <label className="text-xs text-gray-500 mb-1 block">Zawodnik *</label>
                   <select value={formData.athlete_id} onChange={e => setFormData({...formData, athlete_id: e.target.value})}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm" required>
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm" required>
                     <option value="">Wybierz zawodnika</option>
                     {athletes.map(a => <option key={a.id} value={a.id}>{a.username}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Plan (opcjonalnie)</label>
+                  <label className="text-xs text-gray-500 mb-1 block">Plan (opcjonalnie)</label>
                   <select value={formData.plan_id} onChange={e => onPlanChange(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm">
                     <option value="">Brak</option>
                     {plans.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="text-xs text-gray-400 mb-1 block">Tytuł *</label>
+                <label className="text-xs text-gray-500 mb-1 block">Tytuł *</label>
                 <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm" required />
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm" required />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Data *</label>
+                  <label className="text-xs text-gray-500 mb-1 block">Data *</label>
                   <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm" required />
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm" required />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Godzina</label>
+                  <label className="text-xs text-gray-500 mb-1 block">Godzina</label>
                   <input type="time" value={formData.time_slot} onChange={e => setFormData({...formData, time_slot: e.target.value})}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm" />
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm" />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-gray-400 mb-1 block">Status</label>
+                <label className="text-xs text-gray-500 mb-1 block">Status</label>
                 <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm">
                   <option value="scheduled">Zaplanowany</option>
                   <option value="completed">Wykonany</option>
                   <option value="skipped">Pominięty</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs text-gray-400 mb-1 block">Notatki</label>
+                <label className="text-xs text-gray-500 mb-1 block">Notatki</label>
                 <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})}
-                  rows={2} className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm resize-none" />
+                  rows={2} className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm resize-none" />
               </div>
 
               {/* Per-day load/reps overrides */}
               {overrides.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-sm font-semibold text-gray-300">Obciążenie / Powtórzenia na ten dzień</h3>
+                    <h3 className="text-sm font-semibold text-gray-700">Obciążenie / Powtórzenia na ten dzień</h3>
                     <span className="text-xs text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded">override planu</span>
                   </div>
-                  <div className="bg-gray-900/50 rounded-lg p-3 space-y-2">
+                  <div className="bg-gray-100 rounded-lg p-3 space-y-2">
                     {/* Group by exercise */}
                     {[...new Set(overrides.map(o => o.exercise_name ?? `Ex ${o.exercise_id}`))].map(exName => {
                       const exOverrides = overrides.filter(o => (o.exercise_name ?? `Ex ${o.exercise_id}`) === exName)
                       return (
                         <div key={exName}>
-                          <p className="text-xs text-violet-300 font-medium mb-1">{exName}</p>
+                          <p className="text-xs text-violet-700 font-medium mb-1">{exName}</p>
                           <div className="space-y-1">
                             {exOverrides.map((o, globalIdx) => {
                               const idx = overrides.findIndex(x => x.exercise_id === o.exercise_id && x.set_number === o.set_number)
@@ -345,13 +345,13 @@ export default function CalendarPage() {
                                     <label className="text-xs text-gray-500">Reps:</label>
                                     <input type="number" value={o.reps} min={1} max={30}
                                       onChange={e => updateOverride(idx, 'reps', parseInt(e.target.value) || 1)}
-                                      className="w-16 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-xs text-center" />
+                                      className="w-16 px-2 py-1 bg-gray-100 border border-gray-300 rounded text-gray-900 text-xs text-center" />
                                   </div>
                                   <div className="flex items-center gap-1">
                                     <label className="text-xs text-gray-500">kg:</label>
                                     <input type="number" value={o.load_kg} min={0} step={2.5}
                                       onChange={e => updateOverride(idx, 'load_kg', parseFloat(e.target.value) || 0)}
-                                      className="w-20 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white text-xs text-center" />
+                                      className="w-20 px-2 py-1 bg-gray-100 border border-gray-300 rounded text-gray-900 text-xs text-center" />
                                   </div>
                                 </div>
                               )
@@ -372,7 +372,7 @@ export default function CalendarPage() {
                   </button>
                 )}
                 <button type="button" onClick={() => setShowModal(false)}
-                  className="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded">
+                  className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 text-sm rounded">
                   Anuluj
                 </button>
                 <button type="submit"

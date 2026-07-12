@@ -144,15 +144,21 @@ export default function PlansPage() {
     exerciseIndex: number,
     setIndex: number,
     field: string,
-    value: any
+    value: string
   ) => {
-    const newExercises = [...formData.exercises]
-    if (newExercises[exerciseIndex].sets) {
-      newExercises[exerciseIndex].sets[setIndex] = {
-        ...newExercises[exerciseIndex].sets[setIndex],
-        [field]: field === 'rest_seconds' || field === 'reps' ? parseInt(value) : parseFloat(value),
+    const isInt = field === 'rest_seconds' || field === 'reps'
+    const parsed = value.trim() === '' ? 0 : (isInt ? parseInt(value, 10) : parseFloat(value))
+    const numericValue = Number.isNaN(parsed) ? 0 : parsed
+
+    const newExercises = formData.exercises.map((ex, exI) => {
+      if (exI !== exerciseIndex || !ex.sets) return ex
+      return {
+        ...ex,
+        sets: ex.sets.map((set, setI) =>
+          setI === setIndex ? { ...set, [field]: numericValue } : set
+        ),
       }
-    }
+    })
     setFormData({ ...formData, exercises: newExercises })
   }
 
@@ -211,7 +217,7 @@ export default function PlansPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-gray-400">Loading plans...</div>
+        <div className="text-gray-500">Loading plans...</div>
       </div>
     )
   }
@@ -219,7 +225,7 @@ export default function PlansPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Training Plans</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Training Plans</h1>
         <button
           onClick={() => handleOpenModal()}
           className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium transition-colors"
@@ -229,41 +235,41 @@ export default function PlansPage() {
       </div>
 
       {error && (
-        <div className="p-4 bg-red-900/30 border border-red-700 rounded text-red-200">
+        <div className="p-4 bg-red-50 border border-red-300 rounded text-red-700">
           {error}
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {plans.length === 0 ? (
-          <div className="col-span-full text-center py-12 text-gray-400">
+          <div className="col-span-full text-center py-12 text-gray-500">
             No plans yet. Create one to get started.
           </div>
         ) : (
           plans.map((plan) => (
             <div
               key={plan.id}
-              className="bg-gray-800 border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition-colors"
+              className="bg-white border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors"
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{plan.name}</h3>
                   {plan.description && (
-                    <p className="text-sm text-gray-400 mt-1">{plan.description}</p>
+                    <p className="text-sm text-gray-500 mt-1">{plan.description}</p>
                   )}
                 </div>
                 <span
                   className={`px-3 py-1 rounded text-xs font-medium whitespace-nowrap ${
                     plan.is_template
-                      ? 'bg-blue-900/30 text-blue-200'
-                      : 'bg-violet-900/30 text-violet-200'
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'bg-violet-50 text-violet-700'
                   }`}
                 >
                   {plan.is_template ? 'Template' : 'Plan'}
                 </span>
               </div>
 
-              <div className="space-y-2 mb-4 text-sm text-gray-400">
+              <div className="space-y-2 mb-4 text-sm text-gray-500">
                 <p>Exercises: {plan.exercises?.length || 0}</p>
                 {isCoach && plan.assigned_to && (
                   <p>Assigned to: {athletes.find(a => a.id === plan.assigned_to)?.username || 'Unknown'}</p>
@@ -289,13 +295,13 @@ export default function PlansPage() {
                 )}
                 <button
                   onClick={() => handleOpenModal(plan)}
-                  className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded transition-colors"
+                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 text-sm rounded transition-colors"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(plan.id)}
-                  className="px-3 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-200 text-sm rounded transition-colors"
+                  className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 text-sm rounded transition-colors"
                 >
                   ✕
                 </button>
@@ -307,35 +313,35 @@ export default function PlansPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-2xl border border-gray-700 my-8">
-            <h2 className="text-xl font-bold text-white mb-6">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl border border-gray-200 my-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">
               {editingId ? 'Edit Plan' : 'Create New Plan'}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className={`grid gap-4 ${isCoach ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Plan Name
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-violet-600"
+                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 focus:outline-none focus:border-violet-600"
                     required
                   />
                 </div>
 
                 {isCoach && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Przypisz do zawodnika
                     </label>
                     <select
                       value={formData.assigned_to}
                       onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-violet-600"
+                      className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 focus:outline-none focus:border-violet-600"
                     >
                       <option value="">Brak</option>
                       <option value={user?.id ?? ''}>Ja ({user?.username})</option>
@@ -350,13 +356,13 @@ export default function PlansPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-violet-600 h-20 resize-none"
+                  className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 focus:outline-none focus:border-violet-600 h-20 resize-none"
                 />
               </div>
 
@@ -368,14 +374,14 @@ export default function PlansPage() {
                   onChange={(e) => setFormData({ ...formData, is_template: e.target.checked })}
                   className="w-4 h-4 rounded"
                 />
-                <label htmlFor="is_template" className="text-sm text-gray-300">
+                <label htmlFor="is_template" className="text-sm text-gray-700">
                   Save as template
                 </label>
               </div>
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Exercises</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Exercises</h3>
                   <button
                     type="button"
                     onClick={handleAddExercise}
@@ -388,11 +394,11 @@ export default function PlansPage() {
                 {formData.exercises.map((exercise, exIdx) => (
                   <div
                     key={exIdx}
-                    className="bg-gray-700 rounded p-4 space-y-3"
+                    className="bg-gray-100 rounded p-4 space-y-3"
                   >
                     <div className="flex items-end gap-2">
                       <div className="flex-1">
-                        <label className="block text-xs font-medium text-gray-300 mb-1">Exercise</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Exercise</label>
                         {creatingExFor === exIdx ? (
                           <div className="flex gap-1">
                             <input
@@ -402,19 +408,19 @@ export default function PlansPage() {
                               onChange={e => setNewExName(e.target.value)}
                               onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleCreateNewExercise(exIdx))}
                               placeholder="New exercise name..."
-                              className="flex-1 px-3 py-2 bg-gray-600 border border-violet-500 rounded text-white text-sm focus:outline-none"
+                              className="flex-1 px-3 py-2 bg-gray-200 border border-violet-400 rounded text-gray-900 text-sm focus:outline-none"
                             />
                             <button type="button" onClick={() => handleCreateNewExercise(exIdx)}
                               className="px-2 py-1 bg-violet-600 hover:bg-violet-700 text-white text-xs rounded">✓</button>
                             <button type="button" onClick={() => { setCreatingExFor(null); setNewExName('') }}
-                              className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-white text-xs rounded">✕</button>
+                              className="px-2 py-1 bg-gray-200 hover:bg-gray-500 text-gray-900 text-xs rounded">✕</button>
                           </div>
                         ) : (
                           <div className="flex gap-1">
                             <select
                               value={exercise.exercise_id || ''}
                               onChange={(e) => handleExerciseChange(exIdx, 'exercise_id', parseInt(e.target.value))}
-                              className="flex-1 px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:outline-none focus:border-violet-600"
+                              className="flex-1 px-3 py-2 bg-gray-200 border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-violet-600"
                             >
                               <option value="">Select exercise</option>
                               {exercises.map((ex) => (
@@ -422,7 +428,7 @@ export default function PlansPage() {
                               ))}
                             </select>
                             <button type="button" onClick={() => setCreatingExFor(exIdx)}
-                              className="px-2 py-1 bg-gray-600 hover:bg-violet-700 text-violet-300 text-xs rounded whitespace-nowrap">
+                              className="px-2 py-1 bg-gray-200 hover:bg-violet-700 text-violet-700 text-xs rounded whitespace-nowrap">
                               + New
                             </button>
                           </div>
@@ -439,7 +445,7 @@ export default function PlansPage() {
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs font-medium text-gray-300">Sets</label>
+                        <label className="block text-xs font-medium text-gray-700">Sets</label>
                         <button
                           type="button"
                           onClick={() => handleAddSet(exIdx)}
@@ -449,9 +455,9 @@ export default function PlansPage() {
                         </button>
                       </div>
 
-                      <table className="w-full text-xs text-gray-300">
+                      <table className="w-full text-xs text-gray-700">
                         <thead>
-                          <tr className="border-b border-gray-600">
+                          <tr className="border-b border-gray-300">
                             <th className="text-left py-1">Set</th>
                             <th className="text-left py-1">Reps</th>
                             <th className="text-left py-1">Load (kg)</th>
@@ -461,7 +467,7 @@ export default function PlansPage() {
                         </thead>
                         <tbody>
                           {exercise.sets?.map((set, setIdx) => (
-                            <tr key={setIdx} className="border-b border-gray-600">
+                            <tr key={setIdx} className="border-b border-gray-300">
                               <td className="py-1">{set.set_number}</td>
                               <td className="py-1">
                                 <input
@@ -470,7 +476,7 @@ export default function PlansPage() {
                                   onChange={(e) =>
                                     handleSetChange(exIdx, setIdx, 'reps', e.target.value)
                                   }
-                                  className="w-12 px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs"
+                                  className="w-12 px-2 py-1 bg-gray-200 border border-gray-300 rounded text-gray-900 text-xs"
                                   min="1"
                                 />
                               </td>
@@ -481,7 +487,7 @@ export default function PlansPage() {
                                   onChange={(e) =>
                                     handleSetChange(exIdx, setIdx, 'load_kg', e.target.value)
                                   }
-                                  className="w-16 px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs"
+                                  className="w-16 px-2 py-1 bg-gray-200 border border-gray-300 rounded text-gray-900 text-xs"
                                   step="0.5"
                                   min="0"
                                 />
@@ -493,7 +499,7 @@ export default function PlansPage() {
                                   onChange={(e) =>
                                     handleSetChange(exIdx, setIdx, 'rest_seconds', e.target.value)
                                   }
-                                  className="w-14 px-2 py-1 bg-gray-600 border border-gray-500 rounded text-white text-xs"
+                                  className="w-14 px-2 py-1 bg-gray-200 border border-gray-300 rounded text-gray-900 text-xs"
                                   min="0"
                                 />
                               </td>
@@ -501,7 +507,7 @@ export default function PlansPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveSet(exIdx, setIdx)}
-                                  className="text-red-400 hover:text-red-300 text-xs"
+                                  className="text-red-600 hover:text-red-700 text-xs"
                                 >
                                   ✕
                                 </button>
@@ -515,11 +521,11 @@ export default function PlansPage() {
                 ))}
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-gray-700">
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded transition-colors"
                 >
                   Cancel
                 </button>
@@ -538,16 +544,16 @@ export default function PlansPage() {
       {/* Schedule Plan Modal */}
       {schedulingPlan && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700">
-            <h3 className="text-lg font-bold text-white mb-1">Schedule Plan</h3>
-            <p className="text-violet-400 text-sm mb-4">{schedulingPlan.name}</p>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md border border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-1">Schedule Plan</h3>
+            <p className="text-violet-600 text-sm mb-4">{schedulingPlan.name}</p>
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-gray-400 mb-1 block">Athlete</label>
+                <label className="text-xs text-gray-500 mb-1 block">Athlete</label>
                 <select
                   value={schedForm.athlete_id}
                   onChange={e => setSchedForm({ ...schedForm, athlete_id: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-violet-600"
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-violet-600"
                 >
                   <option value="">Wybierz zawodnika...</option>
                   <option value={user?.id ?? ''}>Ja ({user?.username})</option>
@@ -556,34 +562,34 @@ export default function PlansPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Date</label>
+                  <label className="text-xs text-gray-500 mb-1 block">Date</label>
                   <input type="date" value={schedForm.date}
                     onChange={e => setSchedForm({ ...schedForm, date: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-violet-600" />
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-violet-600" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Time (optional)</label>
+                  <label className="text-xs text-gray-500 mb-1 block">Time (optional)</label>
                   <input type="time" value={schedForm.time_slot}
                     onChange={e => setSchedForm({ ...schedForm, time_slot: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:outline-none focus:border-violet-600" />
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:outline-none focus:border-violet-600" />
                 </div>
               </div>
               <div>
-                <label className="text-xs text-gray-400 mb-1 block">Notes</label>
+                <label className="text-xs text-gray-500 mb-1 block">Notes</label>
                 <textarea value={schedForm.notes}
                   onChange={e => setSchedForm({ ...schedForm, notes: e.target.value })}
                   rows={2}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm resize-none focus:outline-none focus:border-violet-600" />
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm resize-none focus:outline-none focus:border-violet-600" />
               </div>
             </div>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setSchedulingPlan(null)}
-                className="flex-1 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded">
+                className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 text-sm rounded">
                 Cancel
               </button>
               <button onClick={handleSchedulePlan}
                 disabled={!schedForm.athlete_id || !schedForm.date}
-                className="flex-1 py-2 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-600 text-white text-sm rounded font-medium">
+                className="flex-1 py-2 bg-violet-600 hover:bg-violet-700 disabled:bg-gray-200 text-white text-sm rounded font-medium">
                 Add to Calendar
               </button>
             </div>

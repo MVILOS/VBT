@@ -111,9 +111,9 @@ function LineTooltip({ active, payload, label }: any) {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-gray-700 rounded-lg p-3 text-center">
-      <div className="text-xl font-bold text-violet-400">{value}</div>
-      <div className="text-xs text-gray-400 mt-1">{label}</div>
+    <div className="bg-gray-100 rounded-lg p-3 text-center">
+      <div className="text-xl font-bold text-violet-600">{value}</div>
+      <div className="text-xs text-gray-500 mt-1">{label}</div>
       {sub && <div className="text-xs text-gray-500 mt-0.5">{sub}</div>}
     </div>
   )
@@ -134,7 +134,7 @@ function ExerciseSelect({ exercises, value, onChange, placeholder = 'Wybierz ćw
     <select
       value={value}
       onChange={e => onChange(Number(e.target.value))}
-      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+      className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm"
     >
       <option value="">{placeholder}</option>
       {Object.entries(groups).map(([group, list]) => (
@@ -414,7 +414,7 @@ export default function AnalyticsPage() {
     } finally { setExporting(false) }
   }
 
-  if (isLoading) return <div className="flex items-center justify-center h-96 text-gray-400">Ładowanie...</div>
+  if (isLoading) return <div className="flex items-center justify-center h-96 text-gray-500">Ładowanie...</div>
 
   // ─── Athlete selector (shared top bar) ──────────────────────────────────────
   const metricLabel = metric === 'mean_velocity' ? 'Mean Velocity (m/s)' : metric === 'peak_velocity' ? 'Peak Velocity (m/s)' : 'Power (W)'
@@ -422,14 +422,14 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-white">{isAthlete ? 'Moje Statystyki' : 'Analityka'}</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{isAthlete ? 'Moje Statystyki' : 'Analityka'}</h1>
         {!isAthlete && (
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-400">Zawodnik:</label>
+            <label className="text-sm text-gray-500">Zawodnik:</label>
             <select
               value={selectedAthlete}
               onChange={e => setSelectedAthlete(e.target.value)}
-              className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+              className="px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm"
             >
               <option value={myId}>Ja ({user?.username})</option>
               {athletes.map(a => <option key={a.id} value={a.id}>{a.username}</option>)}
@@ -439,15 +439,15 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div className="flex border-b border-gray-700">
+      <div className="flex border-b border-gray-200">
         {TABS.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
               activeTab === tab
-                ? 'border-violet-500 text-violet-400'
-                : 'border-transparent text-gray-400 hover:text-gray-200'
+                ? 'border-violet-400 text-violet-600'
+                : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
           >
             {tab}
@@ -462,15 +462,15 @@ export default function AnalyticsPage() {
         <div className="space-y-6">
 
           {/* Session Detail */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Szczegóły Sesji</h2>
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Szczegóły Sesji</h2>
             <div className="flex flex-wrap gap-4 mb-4">
               <div className="flex-1 min-w-36">
-                <label className="block text-xs text-gray-400 mb-1">① Sesja</label>
+                <label className="block text-xs text-gray-500 mb-1">① Sesja</label>
                 <select
                   value={detailSession ?? ''}
                   onChange={e => { setDetailSession(Number(e.target.value)); loadSessionDetail(Number(e.target.value)) }}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm"
                   disabled={sessionList.length === 0}
                 >
                   {sessionList.length === 0
@@ -480,7 +480,7 @@ export default function AnalyticsPage() {
                 </select>
               </div>
               <div className="flex-1 min-w-36">
-                <label className="block text-xs text-gray-400 mb-1">② Ćwiczenie</label>
+                <label className="block text-xs text-gray-500 mb-1">② Ćwiczenie</label>
                 <select
                   value={detailExercise}
                   onChange={async e => {
@@ -489,7 +489,7 @@ export default function AnalyticsPage() {
                     const r = await client.get('/analytics/session-detail', { params: { session_id: detailSession } })
                     setRepData((r.data as RepData[]).filter(d => d.exercise_name === e.target.value))
                   }}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm"
                   disabled={sessionExercises.length === 0}
                 >
                   {sessionExercises.length === 0
@@ -499,9 +499,9 @@ export default function AnalyticsPage() {
                 </select>
               </div>
               <div className="flex-1 min-w-36">
-                <label className="block text-xs text-gray-400 mb-1">③ Metryka</label>
+                <label className="block text-xs text-gray-500 mb-1">③ Metryka</label>
                 <select value={metric} onChange={e => setMetric(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm">
                   <option value="mean_velocity">Mean Velocity (m/s)</option>
                   <option value="peak_velocity">Peak Velocity (m/s)</option>
                   <option value="power_watts">Power (W)</option>
@@ -511,7 +511,7 @@ export default function AnalyticsPage() {
 
             {repData.length > 0 ? (
               <>
-                <div className="grid grid-cols-4 gap-3 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                   <StatCard label="Powtórzenia" value={repData.length} />
                   <StatCard label="Serie" value={Math.max(...repData.map(r => r.set_number))} />
                   <StatCard label="Śr. Prędkość" value={(repData.reduce((s, r) => s + r.mean_velocity, 0) / repData.length).toFixed(2) + ' m/s'} />
@@ -532,29 +532,29 @@ export default function AnalyticsPage() {
                 </ResponsiveContainer>
                 <div className="flex gap-4 mt-2 flex-wrap">
                   {[...new Set(repData.map(r => r.set_number))].map(s => (
-                    <span key={s} className="text-xs text-gray-400">
+                    <span key={s} className="text-xs text-gray-500">
                       Set {s}: {repData.filter(r => r.set_number === s).length} reps @ {repData.find(r => r.set_number === s)?.load_kg}kg
                     </span>
                   ))}
                 </div>
 
                 {/* PXL/CXL */}
-                <div className="mt-4 border-t border-gray-700 pt-4">
+                <div className="mt-4 border-t border-gray-200 pt-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => setShowPxlCxl(!showPxlCxl)}
-                        className={`relative w-10 h-5 rounded-full transition-colors ${showPxlCxl ? 'bg-violet-600' : 'bg-gray-600'}`}
+                        className={`relative w-10 h-5 rounded-full transition-colors ${showPxlCxl ? 'bg-violet-600' : 'bg-gray-200'}`}
                       >
                         <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${showPxlCxl ? 'translate-x-5' : 'translate-x-0.5'}`} />
                       </button>
-                      <span className="text-sm text-gray-300">Monitoring obciążenia treningowego (PXL/CXL)</span>
+                      <span className="text-sm text-gray-700">Monitoring obciążenia treningowego (PXL/CXL)</span>
                     </div>
                     {showPxlCxl && (
                       <div className="flex gap-2">
                         {(['PXL', 'CXL'] as const).map(t => (
                           <button key={t} onClick={() => setStressType(t)}
-                            className={`px-3 py-1 text-xs font-semibold rounded ${stressType === t ? 'bg-violet-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>
+                            className={`px-3 py-1 text-xs font-semibold rounded ${stressType === t ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                             {t}
                           </button>
                         ))}
@@ -563,7 +563,7 @@ export default function AnalyticsPage() {
                   </div>
                   {showPxlCxl && pxlCxlData.length > 0 && (
                     <div>
-                      <p className="text-xs text-gray-400 mb-2">
+                      <p className="text-xs text-gray-500 mb-2">
                         {stressType === 'PXL'
                           ? 'PXL — utrata prędkości w serii (% względem 1. powtórzenia). Wyższy = większe zmęczenie.'
                           : 'CXL — średnia prędkość serii jako % 1. powtórzenia. Niższy = większe zmęczenie.'}
@@ -590,20 +590,20 @@ export default function AnalyticsPage() {
                 </div>
               </>
             ) : (
-              <div className="text-center py-10 text-gray-400">
+              <div className="text-center py-10 text-gray-500">
                 {sessionList.length === 0 ? 'Brak sesji — najpierw wykonaj trening.' : 'Brak danych dla wybranej sesji.'}
               </div>
             )}
           </div>
 
           {/* Overlay / Compare */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Porównanie sesji (Overlay)</h2>
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Porównanie sesji (Overlay)</h2>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Ćwiczenie</label>
+                <label className="block text-sm text-gray-500 mb-1">Ćwiczenie</label>
                 <select value={overlayExercise} onChange={e => setOverlayExercise(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm"
                   disabled={overlaySessionExercises.length === 0}>
                   {overlaySessionExercises.length === 0
                     ? <option>Wybierz sesje do porównania</option>
@@ -612,9 +612,9 @@ export default function AnalyticsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Metryka</label>
+                <label className="block text-sm text-gray-500 mb-1">Metryka</label>
                 <select value={overlayMetric} onChange={e => setOverlayMetric(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm">
                   <option value="mean_velocity">Mean Velocity (m/s)</option>
                   <option value="peak_velocity">Peak Velocity (m/s)</option>
                   <option value="power_watts">Power (W)</option>
@@ -622,16 +622,16 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <div className="mb-4">
-              <label className="block text-sm text-gray-400 mb-2">Zaznacz sesje:</label>
+              <label className="block text-sm text-gray-500 mb-2">Zaznacz sesje:</label>
               <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
                 {overlayAllSessions.map((s, i) => (
-                  <label key={s.id} className={`flex items-center gap-3 px-3 py-2 rounded cursor-pointer transition-colors ${selectedOverlay.has(s.id) ? 'bg-gray-700' : 'hover:bg-gray-700/50'}`}>
+                  <label key={s.id} className={`flex items-center gap-3 px-3 py-2 rounded cursor-pointer transition-colors ${selectedOverlay.has(s.id) ? 'bg-gray-100' : 'hover:bg-gray-100'}`}>
                     <input type="checkbox" checked={selectedOverlay.has(s.id)}
                       onChange={() => { const ns = new Set(selectedOverlay); ns.has(s.id) ? ns.delete(s.id) : ns.add(s.id); setSelectedOverlay(ns) }}
                       className="w-4 h-4 accent-violet-600" />
                     <span className="w-3 h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: selectedOverlay.has(s.id) ? COLORS[Array.from(selectedOverlay).indexOf(s.id) % COLORS.length] : '#4b5563' }} />
-                    <span className="text-sm text-gray-300">{s.date}</span>
+                    <span className="text-sm text-gray-700">{s.date}</span>
                     {s.notes && <span className="text-xs text-gray-500 truncate">— {s.notes}</span>}
                   </label>
                 ))}
@@ -653,23 +653,23 @@ export default function AnalyticsPage() {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-center py-8 text-gray-400">Zaznacz 2+ sesje żeby porównać</div>
+              <div className="text-center py-8 text-gray-500">Zaznacz 2+ sesje żeby porównać</div>
             )}
           </div>
 
           {/* Export CSV */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Eksport danych (CSV)</h2>
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Eksport danych (CSV)</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Od</label>
+                <label className="block text-sm text-gray-500 mb-1">Od</label>
                 <input type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm" />
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm" />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Do</label>
+                <label className="block text-sm text-gray-500 mb-1">Do</label>
                 <input type="date" value={exportTo} onChange={e => setExportTo(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm" />
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm" />
               </div>
               <button onClick={handleExport} disabled={exporting || !selectedAthlete}
                 className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded font-medium disabled:opacity-50">
@@ -686,10 +686,10 @@ export default function AnalyticsPage() {
       {activeTab === 'Trendy' && (
         <div className="space-y-6">
           {/* Controls */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
             <div className="flex flex-wrap gap-4 items-end mb-6">
               <div className="flex-1 min-w-48">
-                <label className="block text-xs text-gray-400 mb-1">Ćwiczenie</label>
+                <label className="block text-xs text-gray-500 mb-1">Ćwiczenie</label>
                 <ExerciseSelect
                   exercises={exercises}
                   value={trendExercise}
@@ -697,11 +697,11 @@ export default function AnalyticsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Zakres</label>
+                <label className="block text-xs text-gray-500 mb-1">Zakres</label>
                 <div className="flex gap-1">
                   {[30, 60, 90, 180].map(d => (
                     <button key={d} onClick={() => handleTrendDays(d)}
-                      className={`px-3 py-2 text-sm rounded ${trendDays === d ? 'bg-violet-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>
+                      className={`px-3 py-2 text-sm rounded ${trendDays === d ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                       {d}d
                     </button>
                   ))}
@@ -709,7 +709,7 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            {trendLoading && <div className="text-center py-8 text-gray-400">Ładowanie...</div>}
+            {trendLoading && <div className="text-center py-8 text-gray-500">Ładowanie...</div>}
 
             {!trendLoading && !trendExercise && (
               <div className="text-center py-10 text-gray-500">Wybierz ćwiczenie żeby zobaczyć trendy</div>
@@ -719,11 +719,11 @@ export default function AnalyticsPage() {
               <>
                 {/* Velocity Trend */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-white mb-1">Trend Prędkości</h3>
-                  <p className="text-xs text-gray-400 mb-4">Średnia prędkość powtórzeń w czasie. Rosnący trend = wzrost gotowości / adaptacja.</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Trend Prędkości</h3>
+                  <p className="text-xs text-gray-500 mb-4">Średnia prędkość powtórzeń w czasie. Rosnący trend = wzrost gotowości / adaptacja.</p>
                   {velocityTrend.length > 0 ? (
                     <>
-                      <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                         <StatCard label="Pomiarów" value={velocityTrend.length} />
                         <StatCard
                           label="Śr. prędkość"
@@ -752,11 +752,11 @@ export default function AnalyticsPage() {
 
                 {/* 1RM Progress */}
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Postęp 1RM</h3>
-                  <p className="text-xs text-gray-400 mb-4">Estymowany 1RM obliczany na podstawie profilu siła-prędkość (F-V). Rosnący trend = wzrost siły.</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Postęp 1RM</h3>
+                  <p className="text-xs text-gray-500 mb-4">Estymowany 1RM obliczany na podstawie profilu siła-prędkość (F-V). Rosnący trend = wzrost siły.</p>
                   {ormProgress.length > 0 ? (
                     <>
-                      <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                         <StatCard label="Pomiarów" value={ormProgress.length} />
                         <StatCard label="Ostatni 1RM" value={ormProgress[ormProgress.length - 1]?.estimated_1rm.toFixed(1) + ' kg'} />
                         <StatCard
@@ -793,20 +793,20 @@ export default function AnalyticsPage() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'Zmęczenie' && (
         <div className="space-y-6">
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-white mb-1">Indeks Zmęczenia</h2>
-            <p className="text-xs text-gray-400 mb-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">Indeks Zmęczenia</h2>
+            <p className="text-xs text-gray-500 mb-4">
               FI% = (1 − V_ostatnia_seria / V_pierwsza_seria) × 100.
               Pokazuje nagromadzone zmęczenie wewnątrztreningowe per ćwiczenie.
             </p>
 
             {/* Session selector */}
             <div className="mb-6">
-              <label className="block text-xs text-gray-400 mb-1">Sesja treningowa</label>
+              <label className="block text-xs text-gray-500 mb-1">Sesja treningowa</label>
               <select
                 value={fatigueSession ?? ''}
                 onChange={e => handleFatigueSession(Number(e.target.value))}
-                className="w-full max-w-sm px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
+                className="w-full max-w-sm px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm"
                 disabled={fatigueSessionList.length === 0}
               >
                 {fatigueSessionList.length === 0
@@ -819,7 +819,7 @@ export default function AnalyticsPage() {
               </select>
             </div>
 
-            {fatigueLoading && <div className="text-center py-8 text-gray-400">Ładowanie...</div>}
+            {fatigueLoading && <div className="text-center py-8 text-gray-500">Ładowanie...</div>}
 
             {!fatigueLoading && !fatigueSession && (
               <div className="text-center py-10 text-gray-500">Wybierz sesję żeby zobaczyć indeks zmęczenia</div>
@@ -832,12 +832,12 @@ export default function AnalyticsPage() {
             {!fatigueLoading && fatigueData.length > 0 && (
               <div className="space-y-6">
                 {fatigueData.map(ex => (
-                  <div key={ex.exercise_id} className="border border-gray-700 rounded-lg p-4">
+                  <div key={ex.exercise_id} className="border border-gray-200 rounded-lg p-4">
                     {/* Header */}
                     <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                       <div>
-                        <h3 className="text-base font-semibold text-white">{ex.exercise_name}</h3>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <h3 className="text-base font-semibold text-gray-900">{ex.exercise_name}</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
                           Najlepsza seria: #{ex.best_set} · Spadek prędkości: {ex.velocity_drop_ms.toFixed(3)} m/s
                         </p>
                       </div>
@@ -846,7 +846,7 @@ export default function AnalyticsPage() {
                           <div className="text-2xl font-bold" style={{ color: readinessColor(ex.readiness_zone) }}>
                             {ex.fatigue_index_pct.toFixed(1)}%
                           </div>
-                          <div className="text-xs text-gray-400">Fatigue Index</div>
+                          <div className="text-xs text-gray-500">Fatigue Index</div>
                         </div>
                         <span className="px-3 py-1 rounded-full text-xs font-semibold"
                           style={{ backgroundColor: readinessColor(ex.readiness_zone) + '33', color: readinessColor(ex.readiness_zone) }}>
@@ -881,19 +881,19 @@ export default function AnalyticsPage() {
 
                     {/* Per-set table */}
                     <div className="mt-3 overflow-x-auto">
-                      <table className="w-full text-xs text-gray-300">
+                      <table className="w-full text-xs text-gray-700">
                         <thead>
-                          <tr className="border-b border-gray-700">
-                            <th className="text-left py-1 pr-3 text-gray-400">Seria</th>
-                            <th className="text-right py-1 pr-3 text-gray-400">Reps</th>
-                            <th className="text-right py-1 pr-3 text-gray-400">Mean V (m/s)</th>
-                            <th className="text-right py-1 pr-3 text-gray-400">Peak V (m/s)</th>
-                            <th className="text-right py-1 text-gray-400">Obciążenie (kg)</th>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-1 pr-3 text-gray-500">Seria</th>
+                            <th className="text-right py-1 pr-3 text-gray-500">Reps</th>
+                            <th className="text-right py-1 pr-3 text-gray-500">Mean V (m/s)</th>
+                            <th className="text-right py-1 pr-3 text-gray-500">Peak V (m/s)</th>
+                            <th className="text-right py-1 text-gray-500">Obciążenie (kg)</th>
                           </tr>
                         </thead>
                         <tbody>
                           {ex.sets.map(s => (
-                            <tr key={s.set_number} className={`border-b border-gray-800 ${s.set_number === ex.best_set ? 'text-cyan-400' : ''}`}>
+                            <tr key={s.set_number} className={`border-b border-gray-200 ${s.set_number === ex.best_set ? 'text-cyan-400' : ''}`}>
                               <td className="py-1 pr-3">
                                 {s.set_number}{s.set_number === ex.best_set && <span className="ml-1 text-cyan-500">★</span>}
                               </td>
@@ -912,8 +912,8 @@ export default function AnalyticsPage() {
                 ))}
 
                 {/* FI% legenda */}
-                <div className="bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-xs text-gray-400 font-semibold mb-2">Strefy zmęczenia (FI%):</p>
+                <div className="bg-gray-100 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 font-semibold mb-2">Strefy zmęczenia (FI%):</p>
                   <div className="flex flex-wrap gap-4 text-xs">
                     {[
                       { zone: 'optimal', label: 'Optymalne (<5%)', desc: 'Bardzo niskie zmęczenie, pełna gotowość' },
@@ -946,30 +946,30 @@ export default function AnalyticsPage() {
           {/* Controls */}
           <div className="flex flex-wrap gap-4 items-center">
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Zakres tygodni</label>
+              <label className="block text-xs text-gray-500 mb-1">Zakres tygodni</label>
               <div className="flex gap-1">
                 {[4, 8, 12, 16].map(w => (
                   <button key={w} onClick={() => { setWeeksCount(w); loadWeekly(w, compExercise as number || undefined) }}
-                    className={`px-3 py-2 text-sm rounded ${weeksCount === w ? 'bg-violet-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}`}>
+                    className={`px-3 py-2 text-sm rounded ${weeksCount === w ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                     {w}T
                   </button>
                 ))}
               </div>
             </div>
             <button onClick={() => loadWeekly(weeksCount, compExercise as number || undefined)}
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm mt-4">
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded text-sm mt-4">
               Odśwież
             </button>
           </div>
 
-          {weeksLoading && <div className="text-center py-8 text-gray-400">Ładowanie...</div>}
+          {weeksLoading && <div className="text-center py-8 text-gray-500">Ładowanie...</div>}
 
           {!weeksLoading && (
             <>
               {/* Weekly Load overview */}
-              <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                <h2 className="text-xl font-bold text-white mb-1">Obciążenie Tygodniowe</h2>
-                <p className="text-xs text-gray-400 mb-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Obciążenie Tygodniowe</h2>
+                <p className="text-xs text-gray-500 mb-4">
                   Prędkość i objętość per tydzień. Zmęczenie tygodniowe = spadek prędkości od pierwszego do ostatniego dnia treningowego tygodnia.
                 </p>
 
@@ -978,7 +978,7 @@ export default function AnalyticsPage() {
                 ) : (
                   <>
                     {/* Summary stats */}
-                    <div className="grid grid-cols-4 gap-3 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                       <StatCard label="Tygodni z danymi" value={weeklyLoad.length} />
                       <StatCard label="Śr. dni/tydzień" value={(weeklyLoad.reduce((s, w) => s + w.training_days, 0) / weeklyLoad.length).toFixed(1)} />
                       <StatCard label="Śr. prędkość" value={(weeklyLoad.reduce((s, w) => s + w.week_mean_velocity, 0) / weeklyLoad.length).toFixed(3) + ' m/s'} />
@@ -986,7 +986,7 @@ export default function AnalyticsPage() {
                     </div>
 
                     {/* Velocity trend chart */}
-                    <h3 className="text-sm font-semibold text-gray-300 mb-2">Prędkość per tydzień</h3>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Prędkość per tydzień</h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <LineChart data={weeklyLoad} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -999,7 +999,7 @@ export default function AnalyticsPage() {
                     </ResponsiveContainer>
 
                     {/* Volume chart */}
-                    <h3 className="text-sm font-semibold text-gray-300 mt-4 mb-2">Objętość treningowa (kg) per tydzień</h3>
+                    <h3 className="text-sm font-semibold text-gray-700 mt-4 mb-2">Objętość treningowa (kg) per tydzień</h3>
                     <ResponsiveContainer width="100%" height={180}>
                       <BarChart data={weeklyLoad} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -1016,22 +1016,22 @@ export default function AnalyticsPage() {
 
                     {/* Weekly summary table */}
                     <div className="mt-4 overflow-x-auto">
-                      <table className="w-full text-xs text-gray-300">
+                      <table className="w-full text-xs text-gray-700">
                         <thead>
-                          <tr className="border-b border-gray-700">
-                            <th className="text-left py-2 pr-3 text-gray-400">Tydzień</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Dni</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Reps</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Śr. V (m/s)</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Objętość (kg)</th>
-                            <th className="text-right py-2 text-gray-400">Zmęczenie tyg.</th>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-2 pr-3 text-gray-500">Tydzień</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Dni</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Reps</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Śr. V (m/s)</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Objętość (kg)</th>
+                            <th className="text-right py-2 text-gray-500">Zmęczenie tyg.</th>
                           </tr>
                         </thead>
                         <tbody>
                           {weeklyLoad.map(w => (
                             <>
                               <tr key={w.week}
-                                className="border-b border-gray-800 hover:bg-gray-700/30 cursor-pointer"
+                                className="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => setExpandedWeek(expandedWeek === w.week ? null : w.week)}>
                                 <td className="py-2 pr-3 font-medium">{w.week} <span className="text-gray-500">{expandedWeek === w.week ? '▲' : '▼'}</span></td>
                                 <td className="text-right py-2 pr-3">{w.training_days}</td>
@@ -1047,14 +1047,14 @@ export default function AnalyticsPage() {
                                 </td>
                               </tr>
                               {expandedWeek === w.week && w.days.map(d => (
-                                <tr key={d.date} className="bg-gray-700/20 border-b border-gray-800/50">
-                                  <td className="py-1.5 pr-3 pl-4 text-gray-400">{d.date}</td>
-                                  <td className="text-right py-1.5 pr-3 text-gray-400">{d.sessions} sesj.</td>
-                                  <td className="text-right py-1.5 pr-3 text-gray-400">{d.total_reps}</td>
+                                <tr key={d.date} className="bg-gray-100 border-b border-gray-200">
+                                  <td className="py-1.5 pr-3 pl-4 text-gray-500">{d.date}</td>
+                                  <td className="text-right py-1.5 pr-3 text-gray-500">{d.sessions} sesj.</td>
+                                  <td className="text-right py-1.5 pr-3 text-gray-500">{d.total_reps}</td>
                                   <td className="text-right py-1.5 pr-3" style={{ color: velColor(d.mean_velocity) }}>
                                     {d.mean_velocity.toFixed(3)}
                                   </td>
-                                  <td className="text-right py-1.5 pr-3 text-gray-400">{d.total_volume_kg.toFixed(0)}</td>
+                                  <td className="text-right py-1.5 pr-3 text-gray-500">{d.total_volume_kg.toFixed(0)}</td>
                                   <td></td>
                                 </tr>
                               ))}
@@ -1068,14 +1068,14 @@ export default function AnalyticsPage() {
               </div>
 
               {/* Week Comparison per exercise */}
-              <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                <h2 className="text-xl font-bold text-white mb-1">Porównanie Tygodni — Ćwiczenie</h2>
-                <p className="text-xs text-gray-400 mb-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Porównanie Tygodni — Ćwiczenie</h2>
+                <p className="text-xs text-gray-500 mb-4">
                   Jak ewoluuje prędkość i obciążenie w kolejnych tygodniach cyklu dla wybranego ćwiczenia.
                   Wysoka prędkość + duże obciążenie = adaptacja. Niska prędkość + rosnąca objętość = akumulacja zmęczenia.
                 </p>
                 <div className="mb-4 max-w-sm">
-                  <label className="block text-xs text-gray-400 mb-1">Ćwiczenie</label>
+                  <label className="block text-xs text-gray-500 mb-1">Ćwiczenie</label>
                   <ExerciseSelect exercises={exercises} value={compExercise} onChange={handleCompExercise} />
                 </div>
 
@@ -1090,7 +1090,7 @@ export default function AnalyticsPage() {
                 {compExercise && weekComparison.length > 0 && (
                   <>
                     {/* Dual line: mean + max velocity */}
-                    <h3 className="text-sm font-semibold text-gray-300 mb-2">Prędkość tygodniowa</h3>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Prędkość tygodniowa</h3>
                     <ResponsiveContainer width="100%" height={220}>
                       <LineChart data={weekComparison} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -1106,7 +1106,7 @@ export default function AnalyticsPage() {
                     </ResponsiveContainer>
 
                     {/* Load chart */}
-                    <h3 className="text-sm font-semibold text-gray-300 mt-4 mb-2">Obciążenie (kg)</h3>
+                    <h3 className="text-sm font-semibold text-gray-700 mt-4 mb-2">Obciążenie (kg)</h3>
                     <ResponsiveContainer width="100%" height={180}>
                       <BarChart data={weekComparison} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -1121,22 +1121,22 @@ export default function AnalyticsPage() {
 
                     {/* Week comparison table */}
                     <div className="mt-4 overflow-x-auto">
-                      <table className="w-full text-xs text-gray-300">
+                      <table className="w-full text-xs text-gray-700">
                         <thead>
-                          <tr className="border-b border-gray-700">
-                            <th className="text-left py-2 pr-3 text-gray-400">Tydzień</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Sesje</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Reps</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Śr. V</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Max V</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Śr. kg</th>
-                            <th className="text-right py-2 pr-3 text-gray-400">Max kg</th>
-                            <th className="text-right py-2 text-gray-400">1RM est.</th>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-2 pr-3 text-gray-500">Tydzień</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Sesje</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Reps</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Śr. V</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Max V</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Śr. kg</th>
+                            <th className="text-right py-2 pr-3 text-gray-500">Max kg</th>
+                            <th className="text-right py-2 text-gray-500">1RM est.</th>
                           </tr>
                         </thead>
                         <tbody>
                           {weekComparison.map(w => (
-                            <tr key={w.week} className="border-b border-gray-800 hover:bg-gray-700/30">
+                            <tr key={w.week} className="border-b border-gray-200 hover:bg-gray-100">
                               <td className="py-2 pr-3 font-medium">{w.week}</td>
                               <td className="text-right py-2 pr-3">{w.sessions}</td>
                               <td className="text-right py-2 pr-3">{w.total_reps}</td>

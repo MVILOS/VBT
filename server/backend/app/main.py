@@ -177,7 +177,7 @@ app = FastAPI(title="VBT Platform API", version="1.0.0")
 
 ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in os.getenv("ALLOWED_ORIGINS", "http://130.61.232.212").split(",")
+    for origin in os.getenv("ALLOWED_ORIGINS", "https://130.61.232.212,http://130.61.232.212").split(",")
     if origin.strip()
 ]
 

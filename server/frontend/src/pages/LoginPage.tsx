@@ -43,18 +43,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-700">
-        <h1 className="text-3xl font-bold text-center text-violet-500 mb-6">VBT Coach</h1>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8 border border-gray-200">
+        <h1 className="text-3xl font-bold text-center text-violet-600 mb-6">VBT Coach</h1>
 
         {/* Tab switcher */}
-        <div className="flex mb-6 border border-gray-700 rounded-lg overflow-hidden">
+        <div className="flex mb-6 border border-gray-200 rounded-lg overflow-hidden">
           {(['login', 'register'] as const).map(m => (
             <button
               key={m}
               onClick={() => { setMode(m); setError('') }}
               className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                mode === m ? 'bg-violet-600 text-white' : 'text-gray-400 hover:text-gray-200'
+                mode === m ? 'bg-violet-600 text-white' : 'text-gray-500 hover:text-gray-800'
               }`}
             >
               {m === 'login' ? 'Logowanie' : 'Rejestracja'}
@@ -63,7 +63,7 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-900/30 border border-red-700 rounded text-red-200 text-sm">
+          <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded text-red-700 text-sm">
             {error}
           </div>
         )}
@@ -71,24 +71,24 @@ export default function LoginPage() {
         {mode === 'login' ? (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Nazwa użytkownika</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nazwa użytkownika</label>
               <input
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 placeholder="twoja_nazwa"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-500"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Hasło</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Hasło</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-500"
                 required
               />
             </div>
@@ -102,28 +102,28 @@ export default function LoginPage() {
           </form>
         ) : (
           <form onSubmit={handleRegister} className="space-y-4">
-            <p className="text-xs text-gray-400 -mt-1">
+            <p className="text-xs text-gray-500 -mt-1">
               Rejestracja dostępna tylko dla zawodników. Trenerów dodaje administrator.
             </p>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Nazwa użytkownika</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nazwa użytkownika</label>
               <input
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 placeholder="twoja_nazwa"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-500"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Hasło</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Hasło</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="min. 6 znaków"
-                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+                className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-500"
                 required
                 minLength={6}
               />

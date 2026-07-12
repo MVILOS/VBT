@@ -18,8 +18,8 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: 'text-red-400 bg-red-900/20 border-red-700',
-  coach: 'text-violet-400 bg-violet-900/20 border-violet-700',
+  admin: 'text-red-600 bg-red-50 border-red-300',
+  coach: 'text-violet-600 bg-violet-50 border-violet-400',
   athlete: 'text-cyan-400 bg-cyan-900/20 border-cyan-700',
 }
 
@@ -124,12 +124,12 @@ export default function AdminPage() {
     return matchRole && matchSearch
   })
 
-  if (isLoading) return <div className="flex items-center justify-center h-96 text-gray-400">Ładowanie...</div>
+  if (isLoading) return <div className="flex items-center justify-center h-96 text-gray-500">Ładowanie...</div>
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Administracja</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Administracja</h1>
         <button
           onClick={() => setShowCreate(!showCreate)}
           className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium text-sm"
@@ -140,46 +140,46 @@ export default function AdminPage() {
 
       {/* Notifications */}
       {error && (
-        <div className="p-3 bg-red-900/30 border border-red-700 rounded-lg text-red-200 text-sm flex justify-between">
+        <div className="p-3 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm flex justify-between">
           {error}
-          <button onClick={() => setError('')} className="text-red-400 hover:text-red-200">✕</button>
+          <button onClick={() => setError('')} className="text-red-600 hover:text-red-700">✕</button>
         </div>
       )}
       {success && (
-        <div className="p-3 bg-green-900/30 border border-green-700 rounded-lg text-green-200 text-sm">
+        <div className="p-3 bg-green-50 border border-green-700 rounded-lg text-green-700 text-sm">
           ✓ {success}
         </div>
       )}
 
       {/* Create user panel */}
       {showCreate && (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Utwórz nowego użytkownika</h2>
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Utwórz nowego użytkownika</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Nazwa użytkownika</label>
+              <label className="block text-xs text-gray-500 mb-1">Nazwa użytkownika</label>
               <input type="text" value={newUser.username} onChange={e => setNewUser({ ...newUser, username: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none" />
+                className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none" />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Hasło</label>
+              <label className="block text-xs text-gray-500 mb-1">Hasło</label>
               <div className="relative">
                 <input
                   type={showCreatePassword ? 'text' : 'password'}
                   value={newUser.password}
                   onChange={e => setNewUser({ ...newUser, password: e.target.value })}
-                  className="w-full px-3 py-2 pr-10 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none"
+                  className="w-full px-3 py-2 pr-10 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none"
                 />
                 <button type="button" onClick={() => setShowCreatePassword(!showCreatePassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 text-xs">
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 text-xs">
                   {showCreatePassword ? 'Ukryj' : 'Pokaż'}
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Rola</label>
+              <label className="block text-xs text-gray-500 mb-1">Rola</label>
               <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none">
+                className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none">
                 <option value="athlete">Zawodnik</option>
                 <option value="coach">Trener</option>
                 <option value="admin">Administrator</option>
@@ -187,9 +187,9 @@ export default function AdminPage() {
             </div>
             {newUser.role === 'athlete' && (
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Przypisz do trenera</label>
+                <label className="block text-xs text-gray-500 mb-1">Przypisz do trenera</label>
                 <select value={newUser.coachId} onChange={e => setNewUser({ ...newUser, coachId: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none">
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none">
                   <option value="">— brak —</option>
                   {coaches.map(c => <option key={c.id} value={c.id}>{c.username}</option>)}
                 </select>
@@ -202,7 +202,7 @@ export default function AdminPage() {
               className="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded font-medium text-sm">
               Utwórz
             </button>
-            <button onClick={() => setShowCreate(false)} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-sm">
+            <button onClick={() => setShowCreate(false)} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm">
               Anuluj
             </button>
           </div>
@@ -210,7 +210,7 @@ export default function AdminPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {(['admin', 'coach', 'athlete'] as const).map(r => (
           <div key={r} className={`rounded-lg p-4 border ${ROLE_COLORS[r]}`}>
             <div className="text-2xl font-bold">{users.filter(u => u.role === r).length}</div>
@@ -226,13 +226,13 @@ export default function AdminPage() {
           placeholder="Szukaj po nazwie użytkownika..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none placeholder-gray-500"
+          className="flex-1 px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none placeholder-gray-500"
         />
         <div className="flex gap-1">
           {['all', 'admin', 'coach', 'athlete'].map(r => (
             <button key={r} onClick={() => setFilterRole(r)}
               className={`px-3 py-2 text-xs font-medium rounded transition-colors ${
-                filterRole === r ? 'bg-violet-600 text-white' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                filterRole === r ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
               }`}>
               {r === 'all' ? 'Wszyscy' : ROLE_LABELS[r]}
             </button>
@@ -241,22 +241,22 @@ export default function AdminPage() {
       </div>
 
       {/* Users table */}
-      <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-700 bg-gray-750">
-              <th className="text-left py-3 px-4 text-xs text-gray-400 font-semibold">UŻYTKOWNIK</th>
-              <th className="text-left py-3 px-4 text-xs text-gray-400 font-semibold">ROLA</th>
-              <th className="text-left py-3 px-4 text-xs text-gray-400 font-semibold">TRENER</th>
-              <th className="text-left py-3 px-4 text-xs text-gray-400 font-semibold">STATUS</th>
-              <th className="text-right py-3 px-4 text-xs text-gray-400 font-semibold">AKCJE</th>
+            <tr className="border-b border-gray-200 bg-gray-100">
+              <th className="text-left py-3 px-4 text-xs text-gray-500 font-semibold">UŻYTKOWNIK</th>
+              <th className="text-left py-3 px-4 text-xs text-gray-500 font-semibold">ROLA</th>
+              <th className="text-left py-3 px-4 text-xs text-gray-500 font-semibold">TRENER</th>
+              <th className="text-left py-3 px-4 text-xs text-gray-500 font-semibold">STATUS</th>
+              <th className="text-right py-3 px-4 text-xs text-gray-500 font-semibold">AKCJE</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map(u => (
-              <tr key={u.id} className="border-b border-gray-700/50 hover:bg-gray-700/30">
+              <tr key={u.id} className="border-b border-gray-200 hover:bg-gray-100">
                 <td className="py-3 px-4">
-                  <div className="font-medium text-white text-sm">{u.username}</div>
+                  <div className="font-medium text-gray-900 text-sm">{u.username}</div>
                   <div className="text-xs text-gray-500">ID: {u.id}</div>
                 </td>
                 <td className="py-3 px-4">
@@ -264,21 +264,21 @@ export default function AdminPage() {
                     {ROLE_LABELS[u.role] ?? u.role}
                   </span>
                 </td>
-                <td className="py-3 px-4 text-gray-400 text-sm">
+                <td className="py-3 px-4 text-gray-500 text-sm">
                   {u.coach_id ? (users.find(c => c.id === u.coach_id)?.username ?? `#${u.coach_id}`) : '—'}
                 </td>
                 <td className="py-3 px-4">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${u.is_active ? 'text-green-400 bg-green-900/20' : 'text-red-400 bg-red-900/20'}`}>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${u.is_active ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
                     {u.is_active ? 'Aktywny' : 'Nieaktywny'}
                   </span>
                 </td>
                 <td className="py-3 px-4 text-right">
                   <button onClick={() => startEdit(u)}
-                    className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 rounded mr-2">
+                    className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 rounded mr-2">
                     Edytuj
                   </button>
                   <button onClick={() => deleteUser(u.id, u.username)}
-                    className="px-3 py-1 text-xs bg-red-900/40 hover:bg-red-900/60 text-red-300 rounded">
+                    className="px-3 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 rounded">
                     Usuń
                   </button>
                 </td>
@@ -294,34 +294,34 @@ export default function AdminPage() {
       {/* Edit modal */}
       {editState && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-white mb-4">Edytuj: {users.find(u => u.id === editState.userId)?.username}</h2>
+          <div className="bg-white border border-gray-200 rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Edytuj: {users.find(u => u.id === editState.userId)?.username}</h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Nazwa użytkownika</label>
+                <label className="block text-xs text-gray-500 mb-1">Nazwa użytkownika</label>
                 <input type="text" value={editState.username} onChange={e => setEditState({ ...editState, username: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none" />
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none" />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Nowe hasło (zostaw puste żeby nie zmieniać)</label>
+                <label className="block text-xs text-gray-500 mb-1">Nowe hasło (zostaw puste żeby nie zmieniać)</label>
                 <div className="relative">
                   <input
                     type={showEditPassword ? 'text' : 'password'}
                     value={editState.password}
                     onChange={e => setEditState({ ...editState, password: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full px-3 py-2 pr-16 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none placeholder-gray-500"
+                    className="w-full px-3 py-2 pr-16 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none placeholder-gray-500"
                   />
                   <button type="button" onClick={() => setShowEditPassword(!showEditPassword)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 text-xs">
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 text-xs">
                     {showEditPassword ? 'Ukryj' : 'Pokaż'}
                   </button>
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">Rola</label>
+                <label className="block text-xs text-gray-500 mb-1">Rola</label>
                 <select value={editState.role} onChange={e => setEditState({ ...editState, role: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none">
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none">
                   <option value="athlete">Zawodnik</option>
                   <option value="coach">Trener</option>
                   <option value="admin">Administrator</option>
@@ -329,9 +329,9 @@ export default function AdminPage() {
               </div>
               {editState.role === 'athlete' && (
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">Przypisz do trenera</label>
+                  <label className="block text-xs text-gray-500 mb-1">Przypisz do trenera</label>
                   <select value={editState.coachId} onChange={e => setEditState({ ...editState, coachId: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm focus:border-violet-500 outline-none">
+                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm focus:border-violet-400 outline-none">
                     <option value="">— brak —</option>
                     {coaches.map(c => <option key={c.id} value={c.id}>{c.username}</option>)}
                   </select>
@@ -340,18 +340,18 @@ export default function AdminPage() {
               <div className="flex items-center gap-3 pt-1">
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" checked={editState.isActive} onChange={e => setEditState({ ...editState, isActive: e.target.checked })} className="sr-only" />
-                  <div className={`w-10 h-5 rounded-full transition-colors ${editState.isActive ? 'bg-green-600' : 'bg-gray-600'}`}>
+                  <div className={`w-10 h-5 rounded-full transition-colors ${editState.isActive ? 'bg-green-600' : 'bg-gray-200'}`}>
                     <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${editState.isActive ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </div>
                 </label>
-                <span className="text-sm text-gray-300">Konto aktywne</span>
+                <span className="text-sm text-gray-700">Konto aktywne</span>
               </div>
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={saveEdit} className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded font-medium text-sm">
                 Zapisz
               </button>
-              <button onClick={() => setEditState(null)} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-sm">
+              <button onClick={() => setEditState(null)} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm">
                 Anuluj
               </button>
             </div>

@@ -102,33 +102,33 @@ export default function Dashboard() {
     await loadCharts(selectedAthlete || String(user?.id ?? ''), id)
   }
 
-  if (isLoading) return <div className="flex items-center justify-center h-96 text-gray-400">Loading dashboard...</div>
+  if (isLoading) return <div className="flex items-center justify-center h-96 text-gray-500">Loading dashboard...</div>
 
   const statCards = isCoach
     ? [
         { label: 'Athletes', val: stats?.total_athletes ?? 0, icon: '👥', color: 'text-cyan-400' },
-        { label: 'Active Plans', val: stats?.active_plans ?? 0, icon: '📋', color: 'text-violet-400' },
-        { label: 'Sessions This Week', val: stats?.sessions_this_week ?? 0, icon: '🏋️', color: 'text-green-400' },
+        { label: 'Active Plans', val: stats?.active_plans ?? 0, icon: '📋', color: 'text-violet-600' },
+        { label: 'Sessions This Week', val: stats?.sessions_this_week ?? 0, icon: '🏋️', color: 'text-green-600' },
       ]
     : [
-        { label: 'Assigned Plans', val: stats?.active_plans ?? 0, icon: '📋', color: 'text-violet-400' },
-        { label: 'Sessions This Week', val: stats?.sessions_this_week ?? 0, icon: '🏋️', color: 'text-green-400' },
+        { label: 'Assigned Plans', val: stats?.active_plans ?? 0, icon: '📋', color: 'text-violet-600' },
+        { label: 'Sessions This Week', val: stats?.sessions_this_week ?? 0, icon: '🏋️', color: 'text-green-600' },
         { label: 'Total Sessions', val: sessions.length, icon: '📊', color: 'text-cyan-400' },
       ]
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-white">{isCoach ? 'Coach Dashboard' : 'My Dashboard'}</h1>
+      <h1 className="text-3xl font-bold text-gray-900">{isCoach ? 'Coach Dashboard' : 'My Dashboard'}</h1>
 
-      {error && <div className="p-4 bg-red-900/30 border border-red-700 rounded text-red-200">{error}</div>}
+      {error && <div className="p-4 bg-red-50 border border-red-300 rounded text-red-700">{error}</div>}
 
       {/* Stats cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {statCards.map(s => (
-          <div key={s.label} className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+          <div key={s.label} className="bg-white border border-gray-200 rounded-lg p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm font-medium">{s.label}</p>
+                <p className="text-gray-500 text-sm font-medium">{s.label}</p>
                 <p className={`text-4xl font-bold mt-2 ${s.color}`}>{s.val}</p>
               </div>
               <div className="text-4xl opacity-60">{s.icon}</div>
@@ -138,22 +138,22 @@ export default function Dashboard() {
       </div>
 
       {/* Chart controls */}
-      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center gap-4 mb-5">
-          <h2 className="text-xl font-bold text-white flex-1">Velocity Trend (last 30 days)</h2>
+          <h2 className="text-xl font-bold text-gray-900 flex-1">Velocity Trend (last 30 days)</h2>
           {isCoach && (
             <div>
-              <label className="text-xs text-gray-400 mr-2">Athlete</label>
+              <label className="text-xs text-gray-500 mr-2">Athlete</label>
               <select value={selectedAthlete} onChange={e => handleAthleteChange(e.target.value)}
-                className="px-3 py-1.5 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+                className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm">
                 {athletes.map(a => <option key={a.id} value={a.id}>{a.username}</option>)}
               </select>
             </div>
           )}
           <div>
-            <label className="text-xs text-gray-400 mr-2">Exercise</label>
+            <label className="text-xs text-gray-500 mr-2">Exercise</label>
             <select value={selectedExercise} onChange={e => handleExerciseChange(e.target.value)}
-              className="px-3 py-1.5 bg-gray-700 border border-gray-600 rounded text-white text-sm">
+              className="px-3 py-1.5 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm">
               {exercises.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
             </select>
           </div>
@@ -179,11 +179,11 @@ export default function Dashboard() {
 
       {/* Weekly volume */}
       {volumeData.length > 0 && (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-white mb-5">Weekly Volume (last 12 weeks)</h2>
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-5">Weekly Volume (last 12 weeks)</h2>
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <p className="text-sm text-gray-400 mb-3">Total Reps per Week</p>
+              <p className="text-sm text-gray-500 mb-3">Total Reps per Week</p>
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={volumeData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -195,7 +195,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </div>
             <div>
-              <p className="text-sm text-gray-400 mb-3">Total Volume (kg) per Week</p>
+              <p className="text-sm text-gray-500 mb-3">Total Volume (kg) per Week</p>
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={volumeData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
@@ -211,32 +211,32 @@ export default function Dashboard() {
       )}
 
       {/* Recent sessions */}
-      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-        <h2 className="text-xl font-bold text-white mb-4">Recent Sessions</h2>
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Sessions</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-700">
-                {isCoach && <th className="text-left py-3 px-4 text-gray-400 font-medium">Athlete</th>}
-                <th className="text-left py-3 px-4 text-gray-400 font-medium">When</th>
-                <th className="text-left py-3 px-4 text-gray-400 font-medium">Duration</th>
-                <th className="text-left py-3 px-4 text-gray-400 font-medium">Reps</th>
+              <tr className="border-b border-gray-200">
+                {isCoach && <th className="text-left py-3 px-4 text-gray-500 font-medium">Athlete</th>}
+                <th className="text-left py-3 px-4 text-gray-500 font-medium">When</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium">Duration</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium">Reps</th>
               </tr>
             </thead>
             <tbody>
               {sessions.length === 0 ? (
-                <tr><td colSpan={isCoach ? 4 : 3} className="py-4 px-4 text-center text-gray-400">No sessions yet</td></tr>
+                <tr><td colSpan={isCoach ? 4 : 3} className="py-4 px-4 text-center text-gray-500">No sessions yet</td></tr>
               ) : (
                 sessions.map(s => (
-                  <tr key={s.id} className="border-b border-gray-700 hover:bg-gray-700/50">
-                    {isCoach && <td className="py-3 px-4 text-gray-200">{s.athlete_name}</td>}
-                    <td className="py-3 px-4 text-gray-400">
+                  <tr key={s.id} className="border-b border-gray-200 hover:bg-gray-100">
+                    {isCoach && <td className="py-3 px-4 text-gray-800">{s.athlete_name}</td>}
+                    <td className="py-3 px-4 text-gray-500">
                       {formatDistanceToNow(new Date(s.started_at), { addSuffix: true })}
                     </td>
-                    <td className="py-3 px-4 text-gray-400">
+                    <td className="py-3 px-4 text-gray-500">
                       {s.duration_seconds ? `${Math.round(s.duration_seconds / 60)}m` : '—'}
                     </td>
-                    <td className="py-3 px-4 text-violet-400 font-semibold">{s.reps_count}</td>
+                    <td className="py-3 px-4 text-violet-600 font-semibold">{s.reps_count}</td>
                   </tr>
                 ))
               )}
