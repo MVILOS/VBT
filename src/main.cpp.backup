@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <ESP32Encoder.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 #include "lift_detector.h"
 #include "data_storage.h"
 #include "ble_server.h"
@@ -18,11 +20,10 @@ DataStorage* storage;
 VBTBleServer* bleServer;
 
 void setup() {
-    // 1. Serial i podstawowe opóźnienie
-    Serial.begin(115200);
-    delay(500);  // Stabilizacja zasilania
+    // 1. WYŁĄCZENIE BROWNOUT DETECTOR
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
-    Serial.println("Starting VBT...");
+    Serial.begin(115200);
 
     // 2. Konfiguracja Diody Statusowej
     pinMode(2, OUTPUT);
@@ -46,16 +47,13 @@ void setup() {
     storage = new DataStorage();
     storage->init();
 
-    // 5. Optymalizacja CPU PRZED BLE - redukcja z 240MHz do 80MHz dla oszczędności prądu
-    setCpuFrequencyMhz(80);
-    Serial.printf("CPU Frequency: %d MHz\n", getCpuFrequencyMhz());
-    delay(500);  // Stabilizacja po zmianie częstotliwości
-
-    // 6. Inicjalizacja BLE (zamiast WiFi)
-    Serial.println("Initializing BLE...");
+    // 5. Inicjalizacja BLE (zamiast WiFi)
     bleServer = new VBTBleServer(detector, storage);
     bleServer->begin();
-    Serial.println("BLE ready");
+
+    // 6. Optymalizacja CPU - redukcja z 240MHz do 160MHz
+    setCpuFrequencyMhz(160);
+    Serial.printf("CPU Frequency: %d MHz\n", getCpuFrequencyMhz());
 
     // Zapal diodę na stałe po starcie
     digitalWrite(2, HIGH);

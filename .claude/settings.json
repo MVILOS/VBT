@@ -1,0 +1,33 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if git rev-parse --git-dir > /dev/null 2>&1; then git add -A && git diff --cached --quiet || git commit -m \"Auto-commit: $(date '+%Y-%m-%d %H:%M:%S') - Modified files\"; fi",
+            "statusMessage": "Auto-committing changes...",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if git rev-parse --git-dir > /dev/null 2>&1 && [ -n \"$(git status --porcelain)\" ]; then git add -A && git commit -m \"Session end auto-commit: $(date '+%Y-%m-%d %H:%M:%S')\"; fi",
+            "statusMessage": "Saving session changes..."
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "echo \"📊 Tokens: $(grep -o '\"token_count\":[0-9]*' ~/.claude/stats-cache.json 2>/dev/null | tail -1 | cut -d: -f2 || echo '?') | ⏱️ Session: $(($(date +%s) - $(stat -c %Y ~/.claude/history.jsonl 2>/dev/null || echo $(date +%s)))) s\"",
+    "padding": 2
+  }
+}
