@@ -40,3 +40,4 @@ server/frontend/dist/
 # OS
 .DS_Store
 Thumbs.db
+auto_resume.log

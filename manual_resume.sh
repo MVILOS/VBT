@@ -5,7 +5,7 @@
 set -e
 
 SERVER="ubuntu@130.61.232.212"
-SSH_KEY="$HOME/ssh-key-2025-12-19.key"
+SSH_KEY="$HOME/.ssh/ssh-key-2025-12-19.key"
 COMMIT_MSG="${1:-Automatic sync before resume}"
 
 echo "=== Ręczne wznowienie pracy ==="

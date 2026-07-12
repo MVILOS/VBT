@@ -5,7 +5,7 @@
 set -e
 
 SERVER="ubuntu@130.61.232.212"
-SSH_KEY="$HOME/ssh-key-2025-12-19.key"
+SSH_KEY="$HOME/.ssh/ssh-key-2025-12-19.key"
 REMOTE_DIR="VBT"
 LOG_FILE="$HOME/Documents/VBT/auto_resume.log"
 SESSION_DURATION=$((5 * 60 * 60))  # 5 godzin w sekundach
