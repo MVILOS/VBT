@@ -13,40 +13,43 @@ Base.metadata.create_all(bind=engine)
 # Exercises: Polish (English) names, categories, MVT values
 # Sources: Jovanović & Flanagan (2014), Mann (2016), Vitruve VBT guide
 # ---------------------------------------------------------------------------
+# Format nazwy: "English (Polski)" - angielski termin wiodący (spójny z
+# literaturą VBT i standardem środowiska), polski w nawiasie wg terminologii
+# PZPC. Nazwa to jednocześnie klucz dopasowania między serwerem a aplikacją.
 EXERCISES = [
-    # --- RUCHY OLIMPIJSKIE (Olympic) ---
+    # --- OLYMPIC (dwubój) ---
     # Main lifts
-    ("Rwanie (Snatch)",                         "olympic",   0.80, "Klasyczne rwanie - ćwiczenie dwubojowe. VBT: peak velocity >1.0 m/s przy submaksymalnych ciężarach."),
-    ("Zarzut (Clean)",                           "olympic",   0.75, "Zarzut - pierwsza część podrzutu. Kluczowy ruch dwubojowy."),
-    ("Wyrwanie (Jerk)",                          "olympic",   0.65, "Wyrwanie - druga część podrzutu. Mierz peak velocity sztangi."),
-    ("Wyrwanie z rozkroku (Split Jerk)",         "olympic",   0.65, "Wyrwanie z rozkrokiem nóg - wariant wyrwania."),
-    ("Szturm (Push Jerk)",                       "olympic",   0.60, "Szturm - wyrwanie bez rozkroku, z ugięciem kolan."),
-    ("Podrzut - Zarzut i Wyrwanie (Clean & Jerk)", "olympic", 0.75, "Pełny podrzut - kompleksowe ćwiczenie olimpijskie."),
+    ("Snatch (Rwanie)",                          "olympic",   0.80, "Klasyczne rwanie - ćwiczenie dwubojowe. VBT: peak velocity >1.0 m/s przy submaksymalnych ciężarach."),
+    ("Clean (Zarzut)",                           "olympic",   0.75, "Zarzut na klatkę - pierwsza część podrzutu. Kluczowy ruch dwubojowy."),
+    ("Jerk (Wyrzut)",                            "olympic",   0.65, "Wyrzut sztangi nad głowę - druga część podrzutu. Mierz peak velocity sztangi."),
+    ("Split Jerk (Wyrzut nożycowy)",             "olympic",   0.65, "Wyrzut z ustawieniem nóg w nożyce - wariant startowy."),
+    ("Push Jerk (Wyrzut siłowy)",                "olympic",   0.60, "Wyrzut bez nożyc, z ugięciem i wyprostem kolan."),
+    ("Clean & Jerk (Podrzut)",                   "olympic",   0.75, "Pełny podrzut - zarzut + wyrzut. Kompleksowe ćwiczenie olimpijskie."),
     # Snatch derivatives
-    ("Rwanie siłowe (Power Snatch)",             "olympic",   1.00, "Rwanie siłowe - chwyt ponad równoległą. Wyższe prędkości niż klasyczne rwanie."),
-    ("Rwanie z wieszania (Hang Snatch)",         "olympic",   0.80, "Rwanie z pozycji wieszania (powyżej/poniżej kolan)."),
-    ("Rwanie z klocków (Block Snatch)",          "olympic",   0.80, "Rwanie z klocków - skrócony zakres ruchu."),
-    ("Szarpanie do rwania (Snatch Pull)",        "olympic",   0.50, "Szarpanie do rwania bez wejścia pod sztangę. Ćwiczenie siłowe dla rwania."),
-    ("Szarpanie do rwania z wieszania (Hang Snatch Pull)", "olympic", 0.50, "Szarpanie do rwania z pozycji wieszania."),
+    ("Power Snatch (Rwanie siłowe)",             "olympic",   1.00, "Rwanie z chwytem ponad równoległą. Wyższe prędkości niż klasyczne rwanie."),
+    ("Hang Snatch (Rwanie z zawieszenia)",       "olympic",   0.80, "Rwanie z pozycji zawieszenia (powyżej/poniżej kolan)."),
+    ("Block Snatch (Rwanie z bloków)",           "olympic",   0.80, "Rwanie z bloków - skrócony zakres ruchu."),
+    ("Snatch Pull (Ciąg rwaniowy)",              "olympic",   0.50, "Ciąg rwaniowy bez wejścia pod sztangę. Ćwiczenie siłowe dla rwania."),
+    ("Hang Snatch Pull (Ciąg rwaniowy z zawieszenia)", "olympic", 0.50, "Ciąg rwaniowy z pozycji zawieszenia."),
     # Clean derivatives
-    ("Zarzut siłowy (Power Clean)",              "olympic",   0.85, "Zarzut siłowy - chwyt ponad równoległą. Wysoka prędkość paska."),
-    ("Zarzut z wieszania (Hang Clean)",          "olympic",   0.75, "Zarzut z pozycji wieszania."),
-    ("Zarzut z klocków (Block Clean)",           "olympic",   0.75, "Zarzut z klocków - skrócony zakres ruchu."),
-    ("Szarpanie do zarzutu (Clean Pull)",        "olympic",   0.45, "Szarpanie do zarzutu bez wejścia pod sztangę."),
-    ("Szarpanie do zarzutu z wieszania (Hang Clean Pull)", "olympic", 0.45, "Szarpanie do zarzutu z pozycji wieszania."),
-    # --- SIŁOWE (Strength) ---
-    ("Przysiad (Back Squat)",                    "strength",  0.30, "Przysiad ze sztangą z tyłu. MVT 0.30 m/s przy 1RM (Pareja-Blanco 2017)."),
-    ("Przysiad przedni (Front Squat)",           "strength",  0.32, "Przysiad przedni - kluczowe ćwiczenie pomocnicze w dwuboju."),
-    ("Martwy ciąg (Deadlift)",                   "strength",  0.15, "Martwy ciąg. Niska MVT (~0.15 m/s) - monitoring zatrzymania technicznego."),
-    ("Martwy ciąg rumuński (Romanian Deadlift)", "strength",  0.15, "RDL - wzmocnienie łańcucha tylnego dla ciągów olimpijskich."),
-    ("Wyciskanie leżąc (Bench Press)",           "strength",  0.17, "Wyciskanie leżąc. MVT 0.17 m/s (García-Ramos 2018)."),
-    ("Wyciskanie żołnierskie (Overhead Press)",  "strength",  0.22, "Press nad głową stojąco. Ważne dla fazy wyrwania."),
-    ("Szturm ze sztangą (Push Press)",           "strength",  0.50, "Push press - ballistyczne wyciskanie z impulsem nóg."),
-    # --- BALISTYCZNE (Ballistic) ---
-    ("Przysiad skoczny (Jump Squat)",            "ballistic", 1.00, "Przysiad skoczny z obciążeniem. MVT >1.0 m/s. Monitoring mocy eksplozywnej."),
-    # --- POMOCNICZE (Auxiliary) ---
-    ("Wiosłowanie sztangą (Barbell Row)",        "auxiliary", 0.25, "Wiosłowanie poziome - antagonista do wyciskań i ciągów."),
-    ("Dobre rano (Good Morning)",                "auxiliary", 0.20, "Good Morning - wzmocnienie grzbietu i łańcucha tylnego."),
+    ("Power Clean (Zarzut siłowy)",              "olympic",   0.85, "Zarzut z chwytem ponad równoległą. Wysoka prędkość sztangi."),
+    ("Hang Clean (Zarzut z zawieszenia)",        "olympic",   0.75, "Zarzut z pozycji zawieszenia."),
+    ("Block Clean (Zarzut z bloków)",            "olympic",   0.75, "Zarzut z bloków - skrócony zakres ruchu."),
+    ("Clean Pull (Ciąg zarzutowy)",              "olympic",   0.45, "Ciąg zarzutowy bez wejścia pod sztangę."),
+    ("Hang Clean Pull (Ciąg zarzutowy z zawieszenia)", "olympic", 0.45, "Ciąg zarzutowy z pozycji zawieszenia."),
+    # --- STRENGTH (siłowe) ---
+    ("Back Squat (Przysiad tylny)",              "strength",  0.30, "Przysiad ze sztangą z tyłu. MVT 0.30 m/s przy 1RM (Pareja-Blanco 2017)."),
+    ("Front Squat (Przysiad przedni)",           "strength",  0.32, "Przysiad przedni - kluczowe ćwiczenie pomocnicze w dwuboju."),
+    ("Deadlift (Martwy ciąg)",                   "strength",  0.15, "Martwy ciąg. Niska MVT (~0.15 m/s) - monitoring zatrzymania technicznego."),
+    ("Romanian Deadlift (Martwy ciąg rumuński)", "strength",  0.15, "RDL - wzmocnienie łańcucha tylnego dla ciągów olimpijskich."),
+    ("Bench Press (Wyciskanie leżąc)",           "strength",  0.17, "Wyciskanie leżąc. MVT 0.17 m/s (García-Ramos 2018)."),
+    ("Overhead Press (Wyciskanie nad głowę)",    "strength",  0.22, "Wyciskanie nad głowę stojąc. Ważne dla fazy wyrzutu."),
+    ("Push Press (Wyciskanie siłowe)",           "strength",  0.50, "Wyciskanie z impulsem nóg (dip-drive), bez wejścia pod sztangę."),
+    # --- BALLISTIC (balistyczne) ---
+    ("Jump Squat (Przysiad ze skokiem)",         "ballistic", 1.00, "Przysiad ze skokiem z obciążeniem. MVT >1.0 m/s. Monitoring mocy eksplozywnej."),
+    # --- AUXILIARY (pomocnicze) ---
+    ("Barbell Row (Wiosłowanie sztangą)",        "auxiliary", 0.25, "Wiosłowanie poziome - antagonista do wyciskań i ciągów."),
+    ("Good Morning (Skłon dzień dobry)",         "auxiliary", 0.20, "Wzmocnienie grzbietu i łańcucha tylnego."),
 ]
 
 
