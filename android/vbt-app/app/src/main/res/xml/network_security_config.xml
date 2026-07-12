@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Serwer VBT (130.61.232.212) używa self-signed certyfikatu TLS (nie jest
+    wystawiony przez zaufane CA), dlatego domyślny system trust store Androida
+    odrzuci połączenie HTTPS. Ten certyfikat jest jawnie dopięty (pinned) jako
+    zaufana kotwica wyłącznie dla tego hosta - to bezpieczniejsze niż globalne
+    "ufaj wszystkim certyfikatom" (trust-all TrustManager).
+    Certyfikat wygasa 2027-06-21 - po tej dacie backend musi wystawić nowy
+    certyfikat i plik res/raw/vbt_server_cert.pem trzeba będzie zaktualizować.
+-->
+<network-security-config>
+    <domain-config>
+        <domain includeSubdomains="false">130.61.232.212</domain>
+        <trust-anchors>
+            <certificates src="@raw/vbt_server_cert" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Cleartext (http) pozostaje wyłączony poza tym jednym hostem -->
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

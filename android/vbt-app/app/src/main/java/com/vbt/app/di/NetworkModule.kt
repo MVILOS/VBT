@@ -21,7 +21,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://130.61.232.212:8000/api/"
+    // Backend jest za nginx, który wymusza HTTPS (port 80 robi 301 -> https) i CORS
+    // ogranicza origin do https://130.61.232.212. Bezpośrednie http://...:8000
+    // omijało nginx i trafiało prosto w kontener backendu - nieaktualne.
+    private const val BASE_URL = "https://130.61.232.212/api/"
 
     @Provides
     @Singleton

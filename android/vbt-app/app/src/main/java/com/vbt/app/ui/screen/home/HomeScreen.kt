@@ -94,6 +94,27 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        // Offline notice - pokazywany, gdy dashboard nie mógł się połączyć z serwerem
+        uiState.offlineNotice?.let { notice ->
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF3A2A00))
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = notice,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFFFC107)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
         // BLE Connection Status
         item {
             Row(

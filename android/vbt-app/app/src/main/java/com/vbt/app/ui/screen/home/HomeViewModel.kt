@@ -24,7 +24,12 @@ data class HomeUiState(
     val todayEntries: List<CalendarEntryDto> = emptyList(),
     val dashboardStats: DashboardStatsDto? = null,
     val recentSessions: List<RecentSessionDto> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    // Ustawiane, gdy którekolwiek zapytanie do serwera (kalendarz/statystyki/
+    // ostatnie sesje) nie powiodło się z powodu braku sieci - dashboard i tak
+    // pokazuje to, co udało się wczytać wcześniej/lokalnie, ale użytkownik musi
+    // wiedzieć, że dane mogą być nieaktualne zamiast po cichu widzieć puste karty.
+    val offlineNotice: String? = null
 )
 
 @HiltViewModel
@@ -62,13 +67,18 @@ class HomeViewModel @Inject constructor(
                 e.printStackTrace()
             }
 
+            var anyNetworkFailure = false
+
             val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
             try {
                 val calendarResponse = apiService.getCalendarEntries(dateStart = today, dateEnd = today)
                 if (calendarResponse.isSuccessful) {
                     _uiState.value = _uiState.value.copy(todayEntries = calendarResponse.body() ?: emptyList())
+                } else {
+                    anyNetworkFailure = true
                 }
             } catch (e: Exception) {
+                anyNetworkFailure = true
                 e.printStackTrace()
             }
 
@@ -76,8 +86,11 @@ class HomeViewModel @Inject constructor(
                 val statsResponse = apiService.getDashboardStats()
                 if (statsResponse.isSuccessful) {
                     _uiState.value = _uiState.value.copy(dashboardStats = statsResponse.body())
+                } else {
+                    anyNetworkFailure = true
                 }
             } catch (e: Exception) {
+                anyNetworkFailure = true
                 e.printStackTrace()
             }
 
@@ -85,12 +98,18 @@ class HomeViewModel @Inject constructor(
                 val recentResponse = apiService.getRecentSessions(limit = 5)
                 if (recentResponse.isSuccessful) {
                     _uiState.value = _uiState.value.copy(recentSessions = recentResponse.body() ?: emptyList())
+                } else {
+                    anyNetworkFailure = true
                 }
             } catch (e: Exception) {
+                anyNetworkFailure = true
                 e.printStackTrace()
             }
 
-            _uiState.value = _uiState.value.copy(isLoading = false)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                offlineNotice = if (anyNetworkFailure) "Brak połączenia z serwerem - dane mogą być nieaktualne" else null
+            )
         }
     }
 

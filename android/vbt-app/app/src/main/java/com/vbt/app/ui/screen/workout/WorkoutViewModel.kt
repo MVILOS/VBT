@@ -37,6 +37,20 @@ enum class WorkoutMode {
     FINISHED           // Session completed
 }
 
+// Sentinel "pseudo-exercise" pokazywany na górze listy w pickerze - pozwala
+// nagrać powtórzenia z czujnika BLE bez przypisywania ich do konkretnego
+// ćwiczenia z bazy (np. szybki test czujnika albo ruch spoza bazy MVT).
+// id = -1 oznacza "brak ćwiczenia serwerowego jeszcze nieutworzonego" -
+// przy pierwszej synchronizacji z internetem apka utworzy odpowiadające mu
+// ćwiczenie na serwerze przez istniejący (niezmieniany) endpoint POST /api/exercises.
+val FREE_MEASUREMENT_EXERCISE = ExerciseDto(
+    id = -1,
+    name = "Wolny pomiar (bez ćwiczenia)",
+    category = "freeform",
+    mvt = null,
+    description = "Swobodny pomiar prędkości/mocy bez przypisania do ćwiczenia z bazy."
+)
+
 data class VelocityPoint(
     val timestampMs: Long,
     val velocityMs: Float
@@ -147,11 +161,25 @@ class WorkoutViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            // Offline-first: od razu pokaż lokalną bazę ćwiczeń z Room (zawsze
+            // dostępna, wgrana przy pierwszym starcie apki - patrz DatabaseModule),
+            // żeby trening dało się zacząć natychmiast nawet bez sieci.
+            val localExercises = try {
+                exerciseRepository.getAllExercises().first().map { it.toExerciseDto() }
+            } catch (_: Exception) {
+                emptyList()
+            }
+            _uiState.update { it.copy(availableExercises = listOf(FREE_MEASUREMENT_EXERCISE) + localExercises) }
+
+            // Następnie spróbuj odświeżyć z serwera - jeśli offline, zostajemy
+            // przy lokalnej bazie zamiast pustej listy / błędu.
             try {
                 val dtoExercises = api.getExercises().body() ?: emptyList()
-                _uiState.update { it.copy(availableExercises = dtoExercises) }
+                _uiState.update { it.copy(availableExercises = listOf(FREE_MEASUREMENT_EXERCISE) + dtoExercises) }
             } catch (_: Exception) {
-                _uiState.update { it.copy(availableExercises = emptyList()) }
+                if (localExercises.isEmpty()) {
+                    _uiState.update { it.copy(error = "Brak połączenia z serwerem - dostępna tylko lokalna baza ćwiczeń") }
+                }
             }
         }
 
@@ -480,10 +508,10 @@ class WorkoutViewModel @Inject constructor(
                 )
             }
 
-            // Queue for live server push (use cached exercises - no API call needed)
+            // Queue for live server push (resolve/auto-create matching server exercise)
             val servId = serverSessionId
             if (servId != null) {
-                val serverEx = state.availableExercises.find { it.name.lowercase() == state.currentExerciseName.lowercase() }
+                val serverEx = resolveServerExercise(state.currentExerciseName, category = null)
                 if (serverEx != null) {
                     pendingServerReps.add(RepResultDto(
                         id = null,
@@ -620,8 +648,8 @@ class WorkoutViewModel @Inject constructor(
             // Finalize server session
             val servId = serverSessionId
             if (servId != null) {
-                // Collect any remaining in-progress reps (use cached exercises)
-                val serverEx = state.availableExercises.find { it.name.lowercase() == state.currentExerciseName.lowercase() }
+                // Collect any remaining in-progress reps (resolve/auto-create matching server exercise)
+                val serverEx = resolveServerExercise(state.currentExerciseName, category = null)
                 if (serverEx != null && state.completedRepsInSet.isNotEmpty()) {
                     state.completedRepsInSet.forEach { rep ->
                         pendingServerReps.add(RepResultDto(
@@ -728,9 +756,9 @@ class WorkoutViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val exercises = api.getExercises().body() ?: emptyList()
-                _uiState.update { it.copy(availableExercises = exercises) }
+                _uiState.update { it.copy(availableExercises = listOf(FREE_MEASUREMENT_EXERCISE) + exercises) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = "Brak połączenia z serwerem - lista ćwiczeń mogła nie zostać odświeżona") }
             }
         }
     }
@@ -784,12 +812,14 @@ class WorkoutViewModel @Inject constructor(
         try {
             val state = _uiState.value
             val serverExercises = api.getExercises().body() ?: emptyList()
-            val serverExByName = serverExercises.associateBy { it.name.lowercase() }
+            _uiState.update { it.copy(availableExercises = listOf(FREE_MEASUREMENT_EXERCISE) + serverExercises) }
 
             val allReps = mutableListOf<RepResultDto>()
 
             for (snapshot in state.completedSets) {
-                val serverEx = serverExByName[snapshot.exerciseName.lowercase()] ?: continue
+                // Dopasuj po nazwie; jeśli ćwiczenie nie istnieje jeszcze na serwerze
+                // (np. lokalny "Wolny pomiar" albo własne ćwiczenie), utwórz je.
+                val serverEx = resolveServerExercise(snapshot.exerciseName, category = null) ?: continue
                 snapshot.reps.forEach { rep ->
                     allReps.add(RepResultDto(
                         id = null, sessionId = null,
@@ -807,7 +837,7 @@ class WorkoutViewModel @Inject constructor(
             }
 
             if (state.completedRepsInSet.isNotEmpty()) {
-                val serverEx = serverExByName[state.currentExerciseName.lowercase()]
+                val serverEx = resolveServerExercise(state.currentExerciseName, category = null)
                 if (serverEx != null) {
                     state.completedRepsInSet.forEach { rep ->
                         allReps.add(RepResultDto(
@@ -844,6 +874,42 @@ class WorkoutViewModel @Inject constructor(
     }
 
     // ==================== Helpers ====================
+
+    // Mapuje lokalną encję Room na ExerciseDto (sam kształt UI używa), żeby
+    // exercise picker mógł działać w pełni offline. id jest ujemne (-localId)
+    // aby oznaczyć "brak potwierdzonego ID serwera" - nie jest używane do
+    // wysyłki powtórzeń (patrz resolveServerExercise), więc kolizje nie mają znaczenia.
+    private fun ExerciseDefinitionEntity.toExerciseDto(): ExerciseDto = ExerciseDto(
+        id = -id.toInt(),
+        name = name,
+        category = category,
+        mvt = null,
+        description = null
+    )
+
+    // Znajduje ćwiczenie po nazwie w cache'u availableExercises; jeśli go tam
+    // nie ma, a jesteśmy online, tworzy je na serwerze przez istniejący endpoint
+    // POST /api/exercises (dostępny dla każdego zalogowanego użytkownika - patrz
+    // server/backend/app/api/exercises.py) i dopisuje do cache'u. Używane m.in.
+    // dla sentinela "Wolny pomiar (bez ćwiczenia)", który przy pierwszym online
+    // sync dostaje realne exercise_id na serwerze. Zwraca null gdy offline -
+    // powtórzenia zostają wtedy zapisane wyłącznie lokalnie w Room.
+    private suspend fun resolveServerExercise(name: String, category: String?): ExerciseDto? {
+        val cached = _uiState.value.availableExercises.find { it.name.equals(name, ignoreCase = true) && it.id > 0 }
+        if (cached != null) return cached
+        return try {
+            val response = api.createExercise(
+                com.vbt.app.data.remote.CreateExerciseRequest(name = name, category = category, mvt = null, description = null)
+            )
+            val created = response.body()
+            if (created != null) {
+                _uiState.update { it.copy(availableExercises = it.availableExercises + created) }
+            }
+            created
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     private fun resetAutoFinishTimer() {
         autoFinishJob?.cancel()
