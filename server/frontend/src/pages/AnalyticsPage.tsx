@@ -369,17 +369,36 @@ export default function AnalyticsPage() {
           .then(r => ({ sid, reps: (r.data as RepData[]).filter(d => d.exercise_name === overlayExercise) }))
       )
     ).then(results => {
-      const allLabels = [...new Set(results.flatMap(r => r.reps.map(d => d.label)))]
-      const chartData = allLabels.map(label => {
-        const point: any = { label }
-        results.forEach(({ sid, reps }) => {
-          const rep = reps.find(d => d.label === label)
+      const metricOf = (d: RepData) =>
+        overlayMetric === 'power_watts' ? d.power_watts
+        : overlayMetric === 'peak_velocity' ? d.peak_velocity
+        : d.mean_velocity
+
+      // Grupuj powtórzenia wg obciążenia (kg), nie wg numeru serii — dzięki temu
+      // krzywe różnych sesji nakładają się na tych samych ciężarach, a nie na
+      // tej samej pozycji serii (która może się różnić np. liczbą rozgrzewek).
+      const perSession = results.map(({ sid, reps }) => {
+        const byLoad = new Map<number, number[]>()
+        reps.forEach(d => {
+          const val = metricOf(d)
+          if (val == null) return
+          const load = Math.round(d.load_kg * 10) / 10
+          if (!byLoad.has(load)) byLoad.set(load, [])
+          byLoad.get(load)!.push(val)
+        })
+        const avgByLoad = new Map<number, number>()
+        byLoad.forEach((vals, load) => avgByLoad.set(load, vals.reduce((a, b) => a + b, 0) / vals.length))
+        return { sid, avgByLoad }
+      })
+
+      const allLoads = [...new Set(perSession.flatMap(p => Array.from(p.avgByLoad.keys())))].sort((a, b) => a - b)
+
+      const chartData = allLoads.map(load => {
+        const point: any = { label: `${load} kg`, load }
+        perSession.forEach(({ sid, avgByLoad }) => {
           const session = overlayAllSessions.find(s => s.id === sid)
           const key = session?.date ?? String(sid)
-          point[key] = overlayMetric === 'power_watts' ? rep?.power_watts ?? null
-            : overlayMetric === 'peak_velocity' ? rep?.peak_velocity ?? null
-            : rep?.mean_velocity ?? null
-          point[key + '_load'] = rep?.load_kg ?? null
+          point[key] = avgByLoad.get(load) ?? null
         })
         return point
       })
@@ -598,7 +617,8 @@ export default function AnalyticsPage() {
 
           {/* Overlay / Compare */}
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Porównanie sesji (Overlay)</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">Porównanie sesji (Overlay)</h2>
+            <p className="text-xs text-gray-500 mb-4">Oś X = obciążenie (kg) — krzywe nakładają się na tych samych ciężarach, niezależnie od kolejności serii.</p>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm text-gray-500 mb-1">Ćwiczenie</label>
