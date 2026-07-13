@@ -17,8 +17,8 @@ const float STEPS_PER_METER = ENCODER_PPR / SPOOL_CIRCUMFERENCE;
 // standardowe położenie wbudowanej diody na klonach ESP32-C3 SuperMini,
 // zwykle podłączonej w logice ODWRÓCONEJ (aktywna stanem LOW) - stąd
 // LED_ACTIVE_LOW poniżej. Zweryfikuj oba na fizycznej płytce.
-const int ENCODER_PIN_A = 5;
-const int ENCODER_PIN_B = 6;
+const int ENCODER_PIN_A = 4;
+const int ENCODER_PIN_B = 5;
 const int LED_PIN = 8;
 const bool LED_ACTIVE_LOW = true;
 
