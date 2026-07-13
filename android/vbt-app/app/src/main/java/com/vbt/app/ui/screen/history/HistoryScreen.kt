@@ -399,6 +399,7 @@ private fun SessionCard(
     session: WorkoutSessionDto,
     isCoach: Boolean,
     onClick: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -461,6 +462,18 @@ private fun SessionCard(
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
+                }
+
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Usuń trening",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
