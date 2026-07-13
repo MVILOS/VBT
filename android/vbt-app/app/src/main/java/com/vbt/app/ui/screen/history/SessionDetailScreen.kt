@@ -329,7 +329,12 @@ private fun StatTile(
 }
 
 @Composable
-private fun RepByRepSection(reps: List<RepResultDto>) {
+private fun RepByRepSection(
+    reps: List<RepResultDto>,
+    onEditSetWeight: (Int) -> Unit,
+    onDeleteRep: (RepResultDto) -> Unit,
+    onMergeSet: (Int) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = VbtSurface)
@@ -347,12 +352,64 @@ private fun RepByRepSection(reps: List<RepResultDto>) {
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            RepTableHeader()
+            val bySet = reps.sortedWith(compareBy({ it.setNumber }, { it.repNumber }))
+                .groupBy { it.setNumber }
 
-            reps.sortedWith(compareBy({ it.setNumber }, { it.repNumber })).forEachIndexed { index, rep ->
-                RepTableRow(
-                    rep = rep,
-                    isAlternate = index % 2 == 1
+            bySet.entries.sortedBy { it.key }.forEach { (setNumber, setReps) ->
+                SetHeader(
+                    setNumber = setNumber,
+                    canMerge = setNumber > 1,
+                    onEditWeight = { onEditSetWeight(setNumber) },
+                    onMerge = { onMergeSet(setNumber) }
+                )
+                RepTableHeader()
+                setReps.forEachIndexed { index, rep ->
+                    RepTableRow(
+                        rep = rep,
+                        isAlternate = index % 2 == 1,
+                        onDelete = { onDeleteRep(rep) }
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SetHeader(
+    setNumber: Int,
+    canMerge: Boolean,
+    onEditWeight: () -> Unit,
+    onMerge: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Seria $setNumber",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (canMerge) {
+                IconButton(onClick = onMerge, modifier = Modifier.size(28.dp)) {
+                    Icon(
+                        Icons.Default.CallMerge,
+                        contentDescription = "Scal z poprzednią serią",
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+            }
+            IconButton(onClick = onEditWeight, modifier = Modifier.size(28.dp)) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Popraw ciężar serii",
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
