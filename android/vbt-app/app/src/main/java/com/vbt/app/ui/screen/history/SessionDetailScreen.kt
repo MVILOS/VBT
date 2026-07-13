@@ -119,6 +119,9 @@ fun SessionDetailScreen(
             session != null -> {
                 SessionDetailContent(
                     session = session,
+                    onEditSetWeight = viewModel::updateSetWeight,
+                    onDeleteRep = viewModel::deleteRep,
+                    onMergeSet = viewModel::mergeSetWithPrevious,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
@@ -131,8 +134,63 @@ fun SessionDetailScreen(
 @Composable
 private fun SessionDetailContent(
     session: WorkoutSessionDto,
+    onEditSetWeight: (Int, Double) -> Unit,
+    onDeleteRep: (Int) -> Unit,
+    onMergeSet: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var setPendingWeightEdit by remember { mutableStateOf<Int?>(null) }
+    var repPendingDelete by remember { mutableStateOf<RepResultDto?>(null) }
+    var setPendingMerge by remember { mutableStateOf<Int?>(null) }
+
+    setPendingWeightEdit?.let { setNumber ->
+        val currentLoad = session.reps?.firstOrNull { it.setNumber == setNumber }?.loadKg ?: 0.0
+        EditWeightDialog(
+            currentLoadKg = currentLoad,
+            onConfirm = { newLoad ->
+                onEditSetWeight(setNumber, newLoad)
+                setPendingWeightEdit = null
+            },
+            onDismiss = { setPendingWeightEdit = null }
+        )
+    }
+
+    repPendingDelete?.let { rep ->
+        AlertDialog(
+            onDismissRequest = { repPendingDelete = null },
+            title = { Text("Usunąć powtórzenie?") },
+            text = { Text("Seria ${rep.setNumber}, powtórzenie ${rep.repNumber} zostanie trwale usunięte (np. fałszywy rep od pociągnięcia linki).") },
+            confirmButton = {
+                TextButton(onClick = {
+                    rep.id?.let(onDeleteRep)
+                    repPendingDelete = null
+                }) {
+                    Text("Usuń", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { repPendingDelete = null } ) { Text("Anuluj") }
+            }
+        )
+    }
+
+    setPendingMerge?.let { setNumber ->
+        AlertDialog(
+            onDismissRequest = { setPendingMerge = null },
+            title = { Text("Scalić serie?") },
+            text = { Text("Powtórzenia z serii $setNumber zostaną dopisane do serii ${setNumber - 1} (np. gdy zapomniano nacisnąć \"kolejna seria\").") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onMergeSet(setNumber)
+                    setPendingMerge = null
+                }) { Text("Scal") }
+            },
+            dismissButton = {
+                TextButton(onClick = { setPendingMerge = null }) { Text("Anuluj") }
+            }
+        )
+    }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -146,7 +204,12 @@ private fun SessionDetailContent(
 
         if (session.reps != null && session.reps.isNotEmpty()) {
             item {
-                RepByRepSection(session.reps)
+                RepByRepSection(
+                    reps = session.reps,
+                    onEditSetWeight = { setNumber -> setPendingWeightEdit = setNumber },
+                    onDeleteRep = { rep -> repPendingDelete = rep },
+                    onMergeSet = { setNumber -> setPendingMerge = setNumber }
+                )
             }
 
             item {
@@ -158,6 +221,36 @@ private fun SessionDetailContent(
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
+}
+
+@Composable
+private fun EditWeightDialog(
+    currentLoadKg: Double,
+    onConfirm: (Double) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var text by remember { mutableStateOf(String.format(Locale.US, "%.1f", currentLoadKg)) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Popraw ciężar serii") },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("Ciężar (kg)") },
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true
+            )
+        },
+        confirmButton = {
+            Button(onClick = {
+                text.replace(',', '.').toDoubleOrNull()?.let(onConfirm)
+            }) { Text("Zapisz") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Anuluj") }
+        }
+    )
 }
 
 @Composable
