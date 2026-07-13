@@ -354,6 +354,7 @@ private fun SessionsList(
     sessions: List<WorkoutSessionDto>,
     isCoach: Boolean,
     onSessionDetail: (Int) -> Unit,
+    onDeleteSession: (WorkoutSessionDto) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val groupedSessions = sessions.groupBy { session ->
