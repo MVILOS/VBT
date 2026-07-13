@@ -124,4 +124,21 @@ class HistoryViewModel @Inject constructor(
             loadActiveSessions()
         }
     }
+
+    fun deleteSyncedSession(sessionId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.deleteSession(sessionId)
+                if (response.isSuccessful) {
+                    _uiState.value = _uiState.value.copy(
+                        sessions = _uiState.value.sessions.filterNot { it.id == sessionId }
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(error = "Nie udało się usunąć sesji: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = "Błąd usuwania sesji: ${e.message}")
+            }
+        }
+    }
 }
