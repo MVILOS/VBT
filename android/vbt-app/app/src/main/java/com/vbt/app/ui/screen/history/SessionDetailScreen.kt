@@ -529,6 +529,16 @@ private fun RepTableRow(
             modifier = Modifier.weight(0.7f),
             textAlign = TextAlign.Center
         )
+        Box(modifier = Modifier.weight(0.5f), contentAlignment = Alignment.Center) {
+            IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Usuń powtórzenie",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
     }
 }
 
