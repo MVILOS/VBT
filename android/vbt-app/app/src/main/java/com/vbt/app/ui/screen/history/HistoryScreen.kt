@@ -64,6 +64,26 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var sessionPendingDelete by remember { mutableStateOf<WorkoutSessionDto?>(null) }
+
+    sessionPendingDelete?.let { session ->
+        AlertDialog(
+            onDismissRequest = { sessionPendingDelete = null },
+            title = { Text("Usunąć trening?") },
+            text = { Text("Ta sesja treningowa (${formatDateTimePolish(session.startedAt)}) zostanie trwale usunięta.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteSyncedSession(session.id)
+                    sessionPendingDelete = null
+                }) {
+                    Text("Usuń", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { sessionPendingDelete = null }) { Text("Anuluj") }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
