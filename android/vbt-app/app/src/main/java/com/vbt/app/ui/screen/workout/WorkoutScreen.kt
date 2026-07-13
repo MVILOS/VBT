@@ -1,5 +1,6 @@
 package com.vbt.app.ui.screen.workout
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
