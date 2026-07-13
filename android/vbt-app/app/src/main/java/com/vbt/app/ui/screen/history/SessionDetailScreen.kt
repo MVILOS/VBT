@@ -466,6 +466,7 @@ private fun RepTableHeader() {
             modifier = Modifier.weight(0.7f),
             textAlign = TextAlign.Center
         )
+        Spacer(modifier = Modifier.weight(0.5f))
     }
 }
 
@@ -473,6 +474,7 @@ private fun RepTableHeader() {
 private fun RepTableRow(
     rep: RepResultDto,
     isAlternate: Boolean,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = if (isAlternate) VbtSurfaceVariant else VbtSurface
