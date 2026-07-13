@@ -14,6 +14,8 @@ from app.schemas import (
     VelocityPoint,
     StartLiveSessionRequest,
     AppendRepsRequest,
+    RepResultUpdate,
+    RepResultResponse,
 )
 from app.core.security import get_current_user
 
