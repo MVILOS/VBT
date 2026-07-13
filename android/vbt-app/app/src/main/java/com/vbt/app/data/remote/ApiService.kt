@@ -87,6 +87,19 @@ interface ApiService {
     @GET("sessions/{id}")
     suspend fun getSession(@Path("id") sessionId: Int): Response<WorkoutSessionDto>
 
+    @PATCH("sessions/{sessionId}/reps/{repId}")
+    suspend fun updateRep(
+        @Path("sessionId") sessionId: Int,
+        @Path("repId") repId: Int,
+        @Body request: UpdateRepRequest
+    ): Response<RepResultDto>
+
+    @DELETE("sessions/{sessionId}/reps/{repId}")
+    suspend fun deleteRep(
+        @Path("sessionId") sessionId: Int,
+        @Path("repId") repId: Int
+    ): Response<Unit>
+
     // Athletes/Users
     @GET("users/athletes")
     suspend fun getAthletes(): Response<List<UserDto>>
