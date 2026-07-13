@@ -433,44 +433,27 @@ fun WorkoutScreen(
         )
     }
 
-    // Finish Workout Dialog
+    // Finish Workout Dialog - trening jest zawsze zapisywany; usunąć zapisaną
+    // (lub nieukończoną) sesję można tylko z poziomu Historii.
     if (showFinishConfirm) {
         AlertDialog(
             onDismissRequest = { showFinishConfirm = false },
             title = { Text("Zakończyć trening?") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Co chcesz zrobić z tym treningiem?")
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Button(
-                        onClick = {
-                            viewModel.finishWorkout()
-                            showFinishConfirm = false
-                            onNavigateBack()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = VbtTeal)
-                    ) {
-                        Icon(Icons.Default.Save, null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Zapisz trening")
-                    }
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.discardWorkout()
-                            showFinishConfirm = false
-                            onNavigateBack()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF4444))
-                    ) {
-                        Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Odrzuć (nie zapisuj)")
-                    }
+            text = { Text("Trening zostanie zapisany. W razie potrzeby będzie go można usunąć lub poprawić w Historii.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.finishWorkout()
+                        showFinishConfirm = false
+                        onNavigateBack()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = VbtTeal)
+                ) {
+                    Icon(Icons.Default.Save, null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Zapisz trening")
                 }
             },
-            confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showFinishConfirm = false }) { Text("Anuluj") }
             }
