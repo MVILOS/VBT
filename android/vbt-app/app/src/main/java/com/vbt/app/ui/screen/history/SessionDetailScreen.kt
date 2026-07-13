@@ -401,7 +401,7 @@ private fun SetHeader(
             if (canMerge) {
                 IconButton(onClick = onMerge, modifier = Modifier.size(28.dp)) {
                     Icon(
-                        Icons.Default.CallMerge,
+                        Icons.AutoMirrored.Filled.CallMerge,
                         contentDescription = "Scal z poprzednią serią",
                         modifier = Modifier.size(16.dp)
                     )
