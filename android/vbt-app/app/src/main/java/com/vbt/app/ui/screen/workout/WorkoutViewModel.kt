@@ -761,28 +761,6 @@ class WorkoutViewModel @Inject constructor(
         }
     }
 
-    fun discardWorkout() {
-        cancelAutoFinish()
-        viewModelScope.launch {
-            // Delete from Room
-            if (localSessionId > 0) {
-                workoutRepository.deleteSession(localSessionId)
-                localSessionId = 0
-            }
-            // Delete from server
-            serverSessionId?.let { servId ->
-                try {
-                    api.deleteSession(servId)
-                } catch (e: Exception) {
-                    Log.w(TAG, "discardWorkout: nie można usunąć sesji $servId z serwera", e)
-                }
-                serverSessionId = null
-            }
-            syncManager.clearPendingReps()
-        }
-        _uiState.update { it.copy(mode = WorkoutMode.FINISHED) }
-    }
-
     fun requestExerciseChange() {
         cancelAutoFinish()
         _uiState.update { it.copy(showChangeExercise = true, isPaused = true) }
