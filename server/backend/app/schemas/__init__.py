@@ -208,6 +208,13 @@ class RepResultResponse(BaseModel):
         from_attributes = True
 
 
+class RepResultUpdate(BaseModel):
+    load_kg: Optional[float] = None
+    set_number: Optional[int] = None
+    rep_number: Optional[int] = None
+    estimated_1rm: Optional[float] = None
+
+
 class WorkoutSessionCreate(BaseModel):
     athlete_id: Optional[int] = None
     plan_id: Optional[int] = None
