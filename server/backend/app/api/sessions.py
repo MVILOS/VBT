@@ -196,6 +196,66 @@ def append_reps(
     return WorkoutSessionResponse.model_validate(session)
 
 
+@router.patch("/{session_id}/reps/{rep_id}", response_model=RepResultResponse)
+def update_rep(
+    session_id: int,
+    rep_id: int,
+    data: RepResultUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Koryguje pojedyncze powtórzenie po zapisaniu sesji (np. źle wpisany ciężar,
+    scalanie serii przez przenumerowanie set_number/rep_number)."""
+    session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    check_session_access(session, current_user, db)
+
+    rep = db.query(RepResult).filter(
+        RepResult.id == rep_id, RepResult.session_id == session_id
+    ).first()
+    if not rep:
+        raise HTTPException(status_code=404, detail="Rep not found")
+
+    if data.load_kg is not None:
+        rep.load_kg = data.load_kg
+    if data.set_number is not None:
+        rep.set_number = data.set_number
+    if data.rep_number is not None:
+        rep.rep_number = data.rep_number
+    if data.estimated_1rm is not None:
+        rep.estimated_1rm = data.estimated_1rm
+
+    db.commit()
+    db.refresh(rep)
+    return RepResultResponse.model_validate(rep)
+
+
+@router.delete("/{session_id}/reps/{rep_id}", status_code=204)
+def delete_rep(
+    session_id: int,
+    rep_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Usuwa pojedyncze błędne powtórzenie (np. fałszywy rep od pociągnięcia linki
+    przy zmianie obciążenia bez wciśniętej pauzy)."""
+    session = db.query(WorkoutSession).filter(WorkoutSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    check_session_access(session, current_user, db)
+
+    rep = db.query(RepResult).filter(
+        RepResult.id == rep_id, RepResult.session_id == session_id
+    ).first()
+    if not rep:
+        raise HTTPException(status_code=404, detail="Rep not found")
+
+    db.query(RepVelocityTrace).filter(RepVelocityTrace.rep_result_id == rep_id).delete()
+    db.delete(rep)
+    db.commit()
+
+
 @router.delete("/{session_id}", status_code=204)
 def delete_session(
     session_id: int,
