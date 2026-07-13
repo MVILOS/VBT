@@ -48,6 +48,12 @@ fun WorkoutScreen(
     var showWeightNumpad by remember { mutableStateOf(false) }
     var showFinishConfirm by remember { mutableStateOf(false) }
 
+    // Gest cofania (swipe/przycisk systemowy) ma otwierać ten sam dialog
+    // zakończenia treningu co strzałka w AppBarze - inaczej omija zapisywanie.
+    BackHandler(enabled = state.mode == WorkoutMode.ACTIVE) {
+        showFinishConfirm = true
+    }
+
     // Ekran nie może gasnąć w trakcie aktywnej serii - telefon leży obok
     // sztangi i zawodnik patrzy na prędkość między powtórzeniami.
     val view = LocalView.current
