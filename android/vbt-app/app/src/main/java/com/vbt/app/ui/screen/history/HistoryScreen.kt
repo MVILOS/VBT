@@ -163,7 +163,8 @@ fun HistoryScreen(
                     SessionsList(
                         sessions = uiState.sessions,
                         isCoach = uiState.isCoach,
-                        onSessionDetail = onSessionDetail
+                        onSessionDetail = onSessionDetail,
+                        onDeleteSession = { session -> sessionPendingDelete = session }
                     )
                 }
             }
