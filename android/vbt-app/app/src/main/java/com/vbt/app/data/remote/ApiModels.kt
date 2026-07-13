@@ -208,6 +208,17 @@ data class RepResultDto(
     val timestamp: String?
 )
 
+data class UpdateRepRequest(
+    @SerializedName("load_kg")
+    val loadKg: Double? = null,
+    @SerializedName("set_number")
+    val setNumber: Int? = null,
+    @SerializedName("rep_number")
+    val repNumber: Int? = null,
+    @SerializedName("estimated_1rm")
+    val estimated1rm: Double? = null
+)
+
 // Velocity Trace
 data class VelocityPoint(
     @SerializedName("timestamp_ms")
