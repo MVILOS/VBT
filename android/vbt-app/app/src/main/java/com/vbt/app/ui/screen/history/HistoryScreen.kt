@@ -386,7 +386,8 @@ private fun SessionsList(
                 SessionCard(
                     session = session,
                     isCoach = isCoach,
-                    onClick = { onSessionDetail(session.id) }
+                    onClick = { onSessionDetail(session.id) },
+                    onDelete = { onDeleteSession(session) }
                 )
             }
         }
