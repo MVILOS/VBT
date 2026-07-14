@@ -1,0 +1,78 @@
+name: VBT
+options:
+  bundleIdPrefix: com.vbt
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    DEVELOPMENT_TEAM: ""
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+
+targets:
+  VBT:
+    type: application
+    platform: iOS
+    sources:
+      - path: VBT
+    resources:
+      - path: VBT/Resources
+        optional: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vbt.app
+        PRODUCT_NAME: VBT
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_PREVIEWS: YES
+        SWIFT_STRICT_CONCURRENCY: complete
+    info:
+      path: VBT/Info.plist
+      properties:
+        CFBundleDisplayName: VBT
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSBluetoothAlwaysUsageDescription: "VBT potrzebuje Bluetooth, aby łączyć się z czujnikiem prędkości sztangi (ESP32) i opcjonalnym pasem HR."
+        NSBluetoothPeripheralUsageDescription: "VBT potrzebuje Bluetooth, aby łączyć się z czujnikiem prędkości sztangi (ESP32)."
+        UIBackgroundModes:
+          - bluetooth-central
+          - processing
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+          NSExceptionDomains: {}
+        ITSAppUsesNonExemptEncryption: false
+    entitlements:
+      path: VBT/VBT.entitlements
+      properties:
+        com.apple.developer.background-modes:
+          - bluetooth-central
+
+  VBTTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: VBTTests
+    dependencies:
+      - target: VBT
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.vbt.app.tests
+
+schemes:
+  VBT:
+    build:
+      targets:
+        VBT: all
+        VBTTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - VBTTests
+    archive:
+      config: Release
