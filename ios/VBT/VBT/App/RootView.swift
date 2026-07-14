@@ -15,7 +15,7 @@ struct RootView: View {
             if auth.isLoggedIn {
                 MainTabView(apiClient: apiClient)
             } else {
-                LoginScreen(apiClient: apiClient)
+                LoginScreen()
             }
         }
         .onChange(of: sessionExpiredNotifier.didExpire) { _, expired in
