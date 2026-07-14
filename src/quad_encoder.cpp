@@ -11,6 +11,14 @@ static const int8_t QUAD_TRANSITION[16] = {
     0,  1, -1,  0
 };
 
+// Programowy filtr glitchy - odtwarza sprzętowy setFilter(1023) z poprzedniego
+// firmware (ESP32Encoder/PCNT, ~12.8us przy 80MHz APB). Bez tego progu
+// elektryczny szum na liniach A/B (zbocza nie są idealnie skokowe) liczy się
+// jako dodatkowe, fałszywe kroki i zawyża obliczaną prędkość. Wartość musi
+// być mniejsza niż odstęp między realnymi zboczami przy maksymalnej
+// spodziewanej prędkości sztangi (kilka m/s), stąd tylko kilkanaście us.
+static const unsigned long MIN_EDGE_INTERVAL_US = 15;
+
 void QuadEncoder::attach(int pinA, int pinB) {
     pinA_ = pinA;
     pinB_ = pinB;
@@ -18,6 +26,7 @@ void QuadEncoder::attach(int pinA, int pinB) {
     pinMode(pinB_, INPUT_PULLUP);
 
     lastState_ = (digitalRead(pinA_) << 1) | digitalRead(pinB_);
+    lastEdgeMicros_ = micros();
     count_ = 0;
 
     activeInstance = this;
