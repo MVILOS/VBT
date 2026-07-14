@@ -14,7 +14,7 @@ struct HomeScreen: View {
             if let viewModel {
                 HomeContent(viewModel: viewModel)
             } else {
-                Color(VbtColor.background).ignoresSafeArea()
+                VbtColor.background.ignoresSafeArea()
             }
         }
         .task {
