@@ -18,6 +18,13 @@
 // Tylko JEDNA instancja na proces (limitacja wynikająca z sygnatury
 // attachInterrupt, który wymaga zwykłego wskaźnika funkcji, nie metody).
 // Do jednego enkodera na urządzeniu to wystarczające.
+//
+// Poprzedni firmware (ESP32Encoder::attachFullQuad na klasycznym ESP32)
+// korzystał ze sprzętowego filtra glitchy PCNT (setFilter(1023) ~= 12.8us
+// przy 80MHz APB). Ten software'owy dekoder na ESP32-C3 tego nie ma, więc
+// odtwarzamy go programowo w onChange() (patrz MIN_EDGE_INTERVAL_US w .cpp)
+// - bez tego drobne zakłócenia na liniach A/B liczą się jako dodatkowe
+// kroki i zawyżają obliczoną prędkość.
 class QuadEncoder {
 public:
     void attach(int pinA, int pinB);
