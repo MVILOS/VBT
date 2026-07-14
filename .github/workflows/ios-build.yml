@@ -44,8 +44,13 @@ jobs:
         id: sim
         run: |
           xcodebuild -showdestinations -project VBT.xcodeproj -scheme VBT CODE_SIGNING_ALLOWED=NO 2>&1 | tee destinations.txt
-          UDID=$(grep -o "platform:iOS Simulator, id:[^,]*" destinations.txt | head -1 | sed 's/.*id://')
-          if [ -z "$UDID" ]; then echo "No iOS Simulator destination found" >&2; exit 1; fi
+          # Placeholdery ("Any iOS Simulator Device") mają w id literalne słowo "Placeholder"
+          # i nie są uruchamialnym urządzeniem — odrzucamy je i bierzemy pierwsze realne.
+          UDID=$(grep "platform:iOS Simulator, id:" destinations.txt \
+            | grep -v "Placeholder" \
+            | head -1 \
+            | sed -E 's/.*id:([^,]*),.*/\1/')
+          if [ -z "$UDID" ]; then echo "No concrete iOS Simulator destination found" >&2; exit 1; fi
           echo "Using simulator UDID: $UDID"
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
 
