@@ -92,7 +92,7 @@ void LiftDetector::update(unsigned long currentMicros) {
 
         if (belowEndThresholdCount >= END_CONFIRM_SAMPLES) {
             unsigned long duration = millis() - liftStartTime;
-            float liftDistance = (float)(currentPositionRaw - startPosition) / STEPS_PER_METER;
+            float liftDistance = cumulativeDistance - startDistance;
 
             // Walidacja podniesienia
             if (duration > MIN_REP_DURATION && liftDistance >= MIN_REP_DISTANCE) {
