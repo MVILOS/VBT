@@ -157,6 +157,8 @@ private struct HomeContent: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
+                HomeMenuTiles()
+
                 Button(role: .destructive) {
                     viewModel.logout()
                 } label: {
