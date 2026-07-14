@@ -1,23 +1,21 @@
 #include <Arduino.h>
 #include "quad_encoder.h"
+#include "spool_model.h"
 #include "lift_detector.h"
 #include "data_storage.h"
 #include "ble_server.h"
 
 // --- KONFIGURACJA SPRZĘTU (ESP32-C3 SuperMini) ---
-// Rolka fizycznie ma ok. 41.5mm "pustej" średnicy, ale przez nawijające się
-// na siebie zwoje linki rośnie w trakcie użycia do ok. 44mm - to źródło
-// narastającego błędu pomiaru, bo poniższa stała jest wartością stałą, a nie
-// dynamicznym modelem. Użyto wartości średniej z zakresu 41.5-44mm, żeby
-// zminimalizować maksymalny błąd w obie strony (dawne 0.04 = 40mm było
-// zwyczajnie błędne, poza całym zakresem rzeczywistej średnicy).
-// Pełna korekta wymagałaby dynamicznego modelu narastania średnicy zależnego
-// od nawiniętej długości linki (grubość linki + średnica rdzenia rolki).
-const float SPOOL_DIAMETER_M = 0.04275;
-const float PI_VAL = 3.14159265359;
-const float SPOOL_CIRCUMFERENCE = SPOOL_DIAMETER_M * PI_VAL;
+// Rolka nawija linkę warstwa na warstwę, więc jej promień rośnie w trakcie
+// użycia (nawijające się na siebie zwoje) - stała średnica fałszowałaby
+// pomiar dystansu/prędkości w miarę odwijania linki w obrębie powtórzenia.
+// Zamiast stałej, LiftDetector używa dynamicznego modelu (SpoolModel,
+// zob. spool_model.h) opartego o fizyczne wymiary rolki zmierzone na
+// urządzeniu:
+const float CORE_DIAMETER_M = 0.042;      // średnica pustego rdzenia rolki
+const float CORD_THICKNESS_M = 0.001;     // grubość linki
+const float MAX_SPOOL_DIAMETER_M = 0.0445; // najwyższy zmierzony szczyt (pełne nawinięcie)
 const float ENCODER_PPR = 1200.0;
-const float STEPS_PER_METER = ENCODER_PPR / SPOOL_CIRCUMFERENCE;
 
 // UWAGA: piny przeniesione z klasycznego ESP32 (25/26, LED=2) na ESP32-C3,
 // który ma tylko GPIO 0-21. Kanały A/B enkodera wg zgłoszenia: GPIO 5 i 6
