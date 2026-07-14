@@ -28,7 +28,9 @@ final class PlanEditViewModel {
     var description = ""
     var assignedToId: Int?
     var isTemplate = false
-    private(set) var exercises: [PlanExerciseState] = []
+    /// Nie `private(set)`: `PlanEditScreen` binduje bezpośrednio w zagnieżdżone pola
+    /// serii (reps/kg) przez `Binding(get:set:)`, więc setter musi być publiczny.
+    var exercises: [PlanExerciseState] = []
     private(set) var availableExercises: [ExerciseDto] = []
     private(set) var availableAthletes: [UserDto] = []
     private(set) var isLoading = false
