@@ -105,7 +105,7 @@ private struct HrMonitorSection: View {
 
     init(viewModel: ConnectViewModel) {
         self.viewModel = viewModel
-        self._heartRateManager = Bindable(viewModel.heartRateManager)
+        self._heartRateManager = Bindable(wrappedValue: viewModel.heartRateManager)
     }
 
     var body: some View {
