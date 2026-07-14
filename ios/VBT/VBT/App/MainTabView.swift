@@ -37,7 +37,7 @@ struct MainTabView: View {
 
             if auth.currentRole == .coach {
                 NavigationStack {
-                    PlaceholderScreen(title: "Zawodnicy", subtitle: "Faza 5 planu portu — ekran w budowie.")
+                    AthleteListScreen(apiClient: apiClient)
                 }
                 .tabItem { Label("Athletes", systemImage: "person.2.fill") }
             }
