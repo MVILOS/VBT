@@ -224,7 +224,7 @@ private struct HomeMenuTiles: View {
                     MenuTile(label: "Plany", systemImage: "figure.strengthtraining.traditional")
                 }
                 NavigationLink {
-                    Text("Analityka — w budowie")
+                    AnalyticsScreen(apiClient: apiClient)
                 } label: {
                     MenuTile(label: "Analityka", systemImage: "chart.bar.fill")
                 }
