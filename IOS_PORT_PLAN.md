@@ -186,6 +186,21 @@ To odpowiada z grubsza nakładowi widocznemu w `ANDROID_V2_PLAN.md` (10+ sesji) 
 
 ---
 
+## 8a. Status implementacji (aktualizowany na bieżąco)
+
+Kod dla Faz 0-2 (fundament, BLE core) oraz częściowo Faza 5 (ConnectScreen) jest napisany
+w `ios/VBT/` i **kompiluje się w CI** (GitHub Actions, macOS runner — `xcodebuild build`
+zielony po każdym pushu, patrz `ios/README.md`). Kod powstał bez dostępu do lokalnego Maca,
+więc weryfikacja ograniczona jest do poprawności typów/składni — **UI, layout i BLE nie były
+jeszcze odpalone na symulatorze ani fizycznym urządzeniu.**
+
+Zrobione: setup projektu, design system, DTO/API client, Keychain/Auth, BLE (`VbtBleManager`,
+`HeartRateManager`, `RepPacketParser` z testami 1:1 z Androidem), use case'y domenowe (z
+testami), nawigacja, Login/Register/Home, Connect.
+
+Następne kroki: test BLE na fizycznym iPhone 15 Pro + ESP32 (patrz sekcja 8 niżej — to wciąż
+pierwszy krok wymagający realnego sprzętu), potem WorkoutScreen (Faza 3).
+
 ## 8. Następny krok
 
 Rekomendowany start: **Faza 0**, a w niej najpierw spike CoreBluetooth ↔ ESP32 (`VBT-Vector`) na fizycznym iPhone 15 Pro. To jedyny punkt w całym planie, gdzie realny sprzęt może ujawnić niespodzianki (np. zachowanie iOS-owego BLE stacku przy częstych notify co 0.1s) — wszystko inne to standardowa, dobrze przetestowana ścieżka SwiftUI.
