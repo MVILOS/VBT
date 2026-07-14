@@ -1,5 +1,5 @@
 /// Port 1:1 z Android `data/ble/BleConnectionState.kt`.
-enum BleConnectionState {
+enum BleConnectionState: Equatable {
     case disconnected
     case scanning
     case connecting
