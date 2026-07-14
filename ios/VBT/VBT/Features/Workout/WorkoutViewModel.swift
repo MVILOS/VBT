@@ -153,10 +153,9 @@ final class WorkoutViewModel {
         mode = .active
         startTime = Date()
 
-        let mvt = exercise.mvt
         bleManager.setExerciseParams(
-            minLiftVel: (mvt ?? 0.6) * (mvt != nil ? 0.5 : 1),
-            endLiftVel: (mvt ?? 0.857) * (mvt != nil ? 0.7 : 1),
+            minLiftVel: exercise.mvt.map { $0 * 0.5 } ?? 0.3,
+            endLiftVel: exercise.mvt.map { $0 * 0.7 } ?? 0.6,
             minRepDist: 0.15
         )
     }
