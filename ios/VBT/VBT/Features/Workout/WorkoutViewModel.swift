@@ -295,9 +295,7 @@ final class WorkoutViewModel {
     }
 
     func reconnectBle() {
-        if let peripheral = bleManager.discoveredPeripherals.first {
-            bleManager.connect(to: peripheral)
-        }
+        bleManager.reconnect()
     }
 
     // MARK: - Heart rate (wołane z View przez .onChange(of: heartRateManager.heartRate))
