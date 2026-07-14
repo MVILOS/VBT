@@ -154,7 +154,7 @@ private struct ScheduleContent: View {
     }
 }
 
-extension Date: @retroactive Identifiable {
+extension Date: Identifiable {
     public var id: TimeInterval { timeIntervalSinceReferenceDate }
 }
 
