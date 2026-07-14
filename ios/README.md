@@ -57,23 +57,35 @@ VBT/
 
 ## Status implementacji
 
-Zrealizowane (kod napisany i **kompiluje się w CI** — `xcodebuild build` zielony):
+Wszystkie ekrany z planu są napisane i **kompilują się w CI** (`xcodebuild build` zielony
+po każdym pushu). Cała aplikacja jest nawigowalna od loginu po każdy tab.
+
 - [x] Szkielet projektu (XcodeGen) + Info.plist (BLE background mode)
 - [x] Design system (kolory/typografia 1:1 z Androidem)
-- [x] DTO/Codable modele (1:1 z `ApiModels.kt`)
-- [x] `APIClient` (async/await, JWT bearer, obsługa wygaśnięcia sesji)
+- [x] DTO/Codable modele (1:1 z `ApiModels.kt`) + `APIClient` (async/await, JWT bearer, obsługa wygaśnięcia sesji)
 - [x] `KeychainStore` (token w Keychain, nie w plaintext jak Android DataStore) + `AuthRepository`
-- [x] BLE: `BleConstants`, `RepPacketParser` (16-bajtowy pakiet rep, pokryty testami jednostkowymi 1:1 z Androidem), `VbtBleManager` + `HeartRateManager` (CoreBluetooth) — **niezweryfikowane na fizycznym sprzęcie**
-- [x] Domain use case'y (power, 1RM, velocity zone) — pokryte testami jednostkowymi portowanymi 1:1 z Androida
-- [x] Nawigacja (`NavigationStack`/`TabView`, routing wg roli) + `LoginScreen`/`RegisterScreen`/`HomeScreen`
-- [x] `ConnectScreen` (skan/lista/połącz dla ESP32 + opcjonalny pas HR)
+- [x] BLE: `BleConstants`, `RepPacketParser` (pokryty testami jednostkowymi 1:1 z Androidem), `VbtBleManager` + `HeartRateManager` (CoreBluetooth) — **niezweryfikowane na fizycznym sprzęcie**
+- [x] Domain use case'y (power, 1RM, velocity zone) — pokryte testami jednostkowymi
+- [x] SwiftData modele (`Core/Persistence/Models.swift`) — **warstwa modelu istnieje, ale nie jest
+      jeszcze podłączona do żadnego ViewModelu** (patrz niżej)
+- [x] Login/Register/Home/Connect/Workout/History/SessionDetail/Plans(List+Edit)/Athletes(List+Profile)/Schedule/Analytics
+- [x] Pełna nawigacja: `TabView` (role-aware) + kafelki na Home, wszystko podpięte, brak placeholderów
 
-Do zrobienia (patrz `../IOS_PORT_PLAN.md`, Fazy 3-6):
-- [ ] **Test `VbtBleManager` na fizycznym ESP32 (`VBT-Vector`) i iPhone 15 Pro — priorytet #1**,
-      zanim rozbuduje się dalej WorkoutScreen na tej podstawie
-- [ ] WorkoutScreen (freestyle + plan mode + live velocity + Live Activity/Dynamic Island)
-- [ ] SwiftData (lub GRDB — do zdecydowania po spike'u) + offline sync
-- [ ] History/SessionDetail, Plans, Athletes, Schedule, Analytics
+**Świadomy dług technologiczny (do spłacenia w kolejnym przebiegu):**
+- Brak offline-first: `WorkoutViewModel` i inne ViewModel'e mówią prosto do REST API,
+  bez pośredniej, crash-safe warstwy SwiftData, jaką Android ma przez Room. Skutek: bez
+  sieci trening dziś **nie zostanie zapisany** (Android w tej sytuacji zachowuje dane
+  lokalnie i synchronizuje później). SwiftData modele już istnieją - brakuje repozytoriów
+  i przepięcia WorkoutViewModel na zapis lokalny + `BackgroundSyncManager`.
+- `ExerciseListScreen` (lokalna baza ćwiczeń Room) pominięty - z tego samego powodu (zależy
+  od lokalnej trwałości, która nie jest jeszcze podłączona).
+- WorkoutScreen: brak Live Activity/Dynamic Island, brak resume przerwanej sesji, brak
+  bufora velocity-trace do uploadu (coach-only w Androidzie).
+- AnalyticsScreen: brak zakładek "zmęczenie" (fatigue-index) i "porównanie tygodni".
+- ScheduleScreen/AthleteProfileScreen: kalendarz jako lista dni, nie tygodniowy grid.
+
+**Priorytet #1 przed dalszą pracą:** test `VbtBleManager` na fizycznym ESP32 (`VBT-Vector`)
+i iPhone 15 Pro — to jedyne miejsce z realnym ryzykiem sprzętowym w całym porcie.
 
 ## Uwaga
 
