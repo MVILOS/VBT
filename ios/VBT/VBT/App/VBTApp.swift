@@ -20,12 +20,14 @@ struct VBTApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            // `apiClient` nie jest @Observable (to zwykły serwis sieciowy, nie stan UI),
+            // więc leci jako zwykła zależność przez init, a nie przez `.environment()`
+            // (który w SwiftUI/iOS17 działa tylko dla typów Observable).
+            RootView(apiClient: apiClient)
                 .environment(authRepository)
                 .environment(sessionExpiredNotifier)
                 .environment(bleManager)
                 .environment(heartRateManager)
-                .environment(apiClient)
                 .preferredColorScheme(.dark)
         }
     }
