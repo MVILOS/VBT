@@ -21,7 +21,7 @@ struct MainTabView: View {
             .tabItem { Label("Workout", systemImage: "figure.strengthtraining.traditional") }
 
             NavigationStack {
-                PlaceholderScreen(title: "Plany", subtitle: "Faza 5 planu portu — ekran w budowie.")
+                PlanListScreen(apiClient: apiClient)
             }
             .tabItem { Label("Plans", systemImage: "chart.bar.fill") }
 
