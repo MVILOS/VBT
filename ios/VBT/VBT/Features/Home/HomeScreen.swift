@@ -219,7 +219,7 @@ private struct HomeMenuTiles: View {
                     MenuTile(label: "Historia", systemImage: "clock.arrow.circlepath")
                 }
                 NavigationLink {
-                    Text("Plany — w budowie")
+                    PlanListScreen(apiClient: apiClient)
                 } label: {
                     MenuTile(label: "Plany", systemImage: "figure.strengthtraining.traditional")
                 }
