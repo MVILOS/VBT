@@ -28,6 +28,7 @@ struct VBTApp: App {
                 .environment(sessionExpiredNotifier)
                 .environment(bleManager)
                 .environment(heartRateManager)
+                .modelContainer(PersistenceContainer.make())
                 .preferredColorScheme(.dark)
         }
     }
