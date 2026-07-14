@@ -8,8 +8,6 @@ struct LoginScreen: View {
     @State private var viewModel: LoginViewModel?
     @State private var showRegister = false
 
-    let apiClient: APIClient
-
     var body: some View {
         content
             .onAppear {
@@ -22,7 +20,7 @@ struct LoginScreen: View {
     @ViewBuilder
     private var content: some View {
         if let viewModel {
-            LoginForm(viewModel: viewModel, apiClient: apiClient, showRegister: $showRegister)
+            LoginForm(viewModel: viewModel, showRegister: $showRegister)
         } else {
             Color(VbtColor.background).ignoresSafeArea()
         }
@@ -31,7 +29,6 @@ struct LoginScreen: View {
 
 private struct LoginForm: View {
     @Bindable var viewModel: LoginViewModel
-    let apiClient: APIClient
     @Binding var showRegister: Bool
 
     var body: some View {
@@ -104,7 +101,7 @@ private struct LoginForm: View {
             }
         }
         .sheet(isPresented: $showRegister) {
-            RegisterScreen(apiClient: apiClient)
+            RegisterScreen()
         }
     }
 }
