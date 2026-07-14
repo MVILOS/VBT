@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 /// Composition root — odpowiednik Hilt `VbtApplication.kt` + moduły DI, ale ręczny
 /// (patrz IOS_PORT_PLAN.md p.6: bez ciężkiego frameworka DI przy tej skali projektu).
