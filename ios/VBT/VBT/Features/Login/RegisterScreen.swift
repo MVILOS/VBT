@@ -2,8 +2,6 @@ import SwiftUI
 
 /// Port 1:1 z Android `RegisterScreen.kt`/`RegisterViewModel.kt`.
 struct RegisterScreen: View {
-    let apiClient: APIClient
-
     @Environment(AuthRepository.self) private var authRepository
     @Environment(\.dismiss) private var dismiss
 
