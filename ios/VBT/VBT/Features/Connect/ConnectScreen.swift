@@ -53,7 +53,7 @@ private struct Esp32Section: View {
 
     init(viewModel: ConnectViewModel) {
         self.viewModel = viewModel
-        self._bleManager = Bindable(viewModel.bleManager)
+        self._bleManager = Bindable(wrappedValue: viewModel.bleManager)
     }
 
     var body: some View {
