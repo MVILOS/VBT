@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Port 1:1 z Android `domain/model/VelocityZone.kt`.
-enum VelocityZone: String, CaseIterable {
+enum VelocityZone: String, CaseIterable, Equatable {
     case absoluteStrength, strengthSpeed, power, speedStrength, speed, ballistic
 
     var label: String {
