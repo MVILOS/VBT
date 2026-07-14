@@ -32,18 +32,31 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
 
-      - name: Build (Debug, iPhone 15 Pro simulator)
+      # Xcode 16 na runnerach GitHub nie preinstaluje symulatora "iPhone 15 Pro" domyślnie
+      # (obraz przesunął się na linię iPhone 16) — CI używa więc dowolnego dostępnego
+      # symulatora iOS tylko po to, żeby zweryfikować kompilację/testy jednostkowe.
+      # Realny test UI/BLE na iPhone 15 Pro i tak wymaga fizycznego urządzenia (patrz README).
+      - name: Pick available iOS Simulator
+        id: sim
+        run: |
+          NAME=$(xcrun simctl list devices available -j \
+            | python3 -c "import json,sys; data=json.load(sys.stdin)['devices']; names=[d['name'] for runtime in data for d in data[runtime] if d.get('isAvailable') and 'iPhone' in d['name']]; print(names[0] if names else '')")
+          if [ -z "$NAME" ]; then echo "No iPhone simulator found" >&2; exit 1; fi
+          echo "Using simulator: $NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build (Debug)
         run: |
           xcodebuild build \
             -project VBT.xcodeproj \
             -scheme VBT \
-            -destination "platform=iOS Simulator,name=iPhone 15 Pro" \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Unit tests (iPhone 15 Pro simulator)
+      - name: Unit tests
         run: |
           xcodebuild test \
             -project VBT.xcodeproj \
             -scheme VBT \
-            -destination "platform=iOS Simulator,name=iPhone 15 Pro" \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
             CODE_SIGNING_ALLOWED=NO
