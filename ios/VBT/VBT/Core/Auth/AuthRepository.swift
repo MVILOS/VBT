@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 enum UserRole: String {
     case coach, athlete
