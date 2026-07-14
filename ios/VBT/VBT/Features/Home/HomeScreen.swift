@@ -197,3 +197,64 @@ private struct StatCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
+
+/// Odpowiednik dolnego `LazyRow` kafelków w Androidzie: Historia / Plany / Analityka /
+/// Urządzenie(+Zawodnicy dla coacha). Na razie tylko "Urządzenie" prowadzi do realnego
+/// ekranu (`ConnectScreen`) - reszta to placeholdery kolejnych faz portu.
+private struct HomeMenuTiles: View {
+    @Environment(AuthRepository.self) private var authRepository
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                NavigationLink {
+                    ConnectScreen()
+                } label: {
+                    MenuTile(label: "Urządzenie", systemImage: "dot.radiowaves.left.and.right")
+                }
+                NavigationLink {
+                    Text("Historia — w budowie")
+                } label: {
+                    MenuTile(label: "Historia", systemImage: "clock.arrow.circlepath")
+                }
+                NavigationLink {
+                    Text("Plany — w budowie")
+                } label: {
+                    MenuTile(label: "Plany", systemImage: "figure.strengthtraining.traditional")
+                }
+                NavigationLink {
+                    Text("Analityka — w budowie")
+                } label: {
+                    MenuTile(label: "Analityka", systemImage: "chart.bar.fill")
+                }
+                if authRepository.currentRole == .coach {
+                    NavigationLink {
+                        Text("Zawodnicy — w budowie")
+                    } label: {
+                        MenuTile(label: "Zawodnicy", systemImage: "person.2.fill")
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct MenuTile: View {
+    let label: String
+    let systemImage: String
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.system(size: 24))
+                .foregroundStyle(VbtColor.teal)
+            Text(label)
+                .font(VbtFont.caption)
+                .foregroundStyle(VbtColor.textPrimary)
+        }
+        .frame(width: 100, height: 90)
+        .background(VbtColor.surfaceVariant)
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(VbtColor.teal, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
