@@ -114,8 +114,7 @@ private struct HomeContent: View {
 
                 // Duży przycisk "NOWY TRENING"
                 NavigationLink {
-                    // TODO Faza 3: WorkoutScreen
-                    Text("Workout — w budowie")
+                    WorkoutScreen(apiClient: apiClient)
                 } label: {
                     VStack(spacing: 8) {
                         Image(systemName: "play.fill")
