@@ -26,7 +26,7 @@ struct MainTabView: View {
             .tabItem { Label("Plans", systemImage: "chart.bar.fill") }
 
             NavigationStack {
-                PlaceholderScreen(title: "Harmonogram", subtitle: "Faza 5 planu portu — ekran w budowie.")
+                ScheduleScreen(apiClient: apiClient)
             }
             .tabItem { Label("Schedule", systemImage: "calendar") }
 
