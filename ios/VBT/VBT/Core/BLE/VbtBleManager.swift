@@ -60,6 +60,13 @@ final class VbtBleManager: NSObject {
         central.connect(device)
     }
 
+    /// Ponowna próba połączenia z ostatnio używanym urządzeniem (np. przycisk "Reconnect"
+    /// na WorkoutScreen po tym, jak auto-reconnect wyczerpał limit prób).
+    func reconnect() {
+        guard let peripheral else { return }
+        connect(to: peripheral)
+    }
+
     func disconnect() {
         userInitiatedDisconnect = true
         reconnectTask?.cancel()
