@@ -45,6 +45,15 @@ void QuadEncoder::clearCount() {
 }
 
 void IRAM_ATTR QuadEncoder::onChange() {
+    unsigned long now = micros();
+    if (now - lastEdgeMicros_ < MIN_EDGE_INTERVAL_US) {
+        // Zbyt szybko po poprzednim zboczu - traktuj jako zakłócenie i
+        // odrzuć, nie aktualizując stanu (patrz komentarz przy
+        // MIN_EDGE_INTERVAL_US wyżej).
+        return;
+    }
+    lastEdgeMicros_ = now;
+
     uint8_t state = (digitalRead(pinA_) << 1) | digitalRead(pinB_);
     uint8_t idx = (lastState_ << 2) | state;
     count_ += QUAD_TRANSITION[idx];
