@@ -1,5 +1,6 @@
 import CoreBluetooth
 import Foundation
+import Observation
 
 /// Port 1:1 z Android `data/ble/HeartRateManager.kt` — niezależny od `VbtBleManager`
 /// manager standardowego BLE Heart Rate Service (opaska/pas HR, opcjonalny).
