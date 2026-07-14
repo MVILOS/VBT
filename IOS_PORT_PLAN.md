@@ -188,18 +188,25 @@ To odpowiada z grubsza nakładowi widocznemu w `ANDROID_V2_PLAN.md` (10+ sesji) 
 
 ## 8a. Status implementacji (aktualizowany na bieżąco)
 
-Kod dla Faz 0-2 (fundament, BLE core) oraz częściowo Faza 5 (ConnectScreen) jest napisany
-w `ios/VBT/` i **kompiluje się w CI** (GitHub Actions, macOS runner — `xcodebuild build`
-zielony po każdym pushu, patrz `ios/README.md`). Kod powstał bez dostępu do lokalnego Maca,
-więc weryfikacja ograniczona jest do poprawności typów/składni — **UI, layout i BLE nie były
-jeszcze odpalone na symulatorze ani fizycznym urządzeniu.**
+Wszystkie ekrany z Faz 0-5 są napisane w `ios/VBT/` i **kompilują się w CI** (GitHub Actions,
+macOS runner — `xcodebuild build` zielony po każdym pushu, patrz `ios/README.md`). Kod
+powstał bez dostępu do lokalnego Maca, więc weryfikacja ograniczona jest do poprawności
+typów/składni — **UI, layout i BLE nie były jeszcze odpalone na symulatorze ani fizycznym
+urządzeniu.**
 
 Zrobione: setup projektu, design system, DTO/API client, Keychain/Auth, BLE (`VbtBleManager`,
 `HeartRateManager`, `RepPacketParser` z testami 1:1 z Androidem), use case'y domenowe (z
-testami), nawigacja, Login/Register/Home, Connect.
+testami), SwiftData modele (bez podłączenia do ViewModeli), nawigacja i komplet ekranów:
+Login/Register/Home/Connect/Workout/History/SessionDetail/Plans/Athletes/Schedule/Analytics.
 
-Następne kroki: test BLE na fizycznym iPhone 15 Pro + ESP32 (patrz sekcja 8 niżej — to wciąż
-pierwszy krok wymagający realnego sprzętu), potem WorkoutScreen (Faza 3).
+Świadomie pominięte/uproszczone (patrz `ios/README.md` po pełną listę): offline-first
+(brak crash-safe zapisu lokalnego podczas treningu - dziś trening bez sieci się nie zapisze),
+`ExerciseListScreen` (zależny od lokalnej bazy), Live Activity, resume sesji, zakładki
+zmęczenia/porównania tygodni w analityce, kalendarz jako grid tygodniowy.
+
+Następny krok pozostaje ten sam: test BLE na fizycznym iPhone 15 Pro + ESP32 (sekcja 8 niżej),
+potem spłata długu technologicznego (offline-first / SwiftData wiring) - to już wymaga
+świadomej decyzji, bo wiąże się z przepisaniem WorkoutViewModel na wzorzec repository.
 
 ## 8. Następny krok
 
