@@ -157,7 +157,7 @@ private struct HomeContent: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                HomeMenuTiles()
+                HomeMenuTiles(apiClient: apiClient)
 
                 Button(role: .destructive) {
                     viewModel.logout()
