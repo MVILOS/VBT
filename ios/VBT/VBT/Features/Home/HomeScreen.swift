@@ -202,6 +202,7 @@ private struct StatCard: View {
 /// Urządzenie(+Zawodnicy dla coacha). Na razie tylko "Urządzenie" prowadzi do realnego
 /// ekranu (`ConnectScreen`) - reszta to placeholdery kolejnych faz portu.
 private struct HomeMenuTiles: View {
+    let apiClient: APIClient
     @Environment(AuthRepository.self) private var authRepository
 
     var body: some View {
@@ -213,7 +214,7 @@ private struct HomeMenuTiles: View {
                     MenuTile(label: "Urządzenie", systemImage: "dot.radiowaves.left.and.right")
                 }
                 NavigationLink {
-                    Text("Historia — w budowie")
+                    HistoryScreen(apiClient: apiClient)
                 } label: {
                     MenuTile(label: "Historia", systemImage: "clock.arrow.circlepath")
                 }
