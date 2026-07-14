@@ -230,7 +230,7 @@ private struct HomeMenuTiles: View {
                 }
                 if authRepository.currentRole == .coach {
                     NavigationLink {
-                        Text("Zawodnicy — w budowie")
+                        AthleteListScreen(apiClient: apiClient)
                     } label: {
                         MenuTile(label: "Zawodnicy", systemImage: "person.2.fill")
                     }
