@@ -61,10 +61,8 @@ final class HomeViewModel {
     func logout() {
         authRepository.logout()
     }
-}
 
-private extension ISO8601DateFormatter {
-    static let dateOnly: DateFormatter = {
+    private static let dateOnlyFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.calendar = Calendar(identifier: .iso8601)
