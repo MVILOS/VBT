@@ -12,7 +12,7 @@ struct HomeScreen: View {
     var body: some View {
         Group {
             if let viewModel {
-                HomeContent(viewModel: viewModel)
+                HomeContent(viewModel: viewModel, apiClient: apiClient)
             } else {
                 VbtColor.background.ignoresSafeArea()
             }
