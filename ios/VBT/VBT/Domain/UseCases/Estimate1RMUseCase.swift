@@ -68,11 +68,7 @@ struct Estimate1RMUseCase {
 
         guard slope < 0 else { return nil }
 
-        let estimated1RM = Float((mvt.toDouble() - intercept) / slope)
+        let estimated1RM = Float((Double(mvt) - intercept) / slope)
         return estimated1RM > 0 ? estimated1RM : nil
     }
-}
-
-private extension Float {
-    func toDouble() -> Double { Double(self) }
 }
