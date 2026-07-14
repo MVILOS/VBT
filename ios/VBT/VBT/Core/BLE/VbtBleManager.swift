@@ -1,5 +1,6 @@
 import CoreBluetooth
 import Foundation
+import Observation
 
 /// Port `data/ble/VbtBleManager.kt` z Nordic Android BLE na CoreBluetooth.
 ///
