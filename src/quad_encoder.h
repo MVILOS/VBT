@@ -30,6 +30,7 @@ private:
     int pinB_ = -1;
     volatile int64_t count_ = 0;
     volatile uint8_t lastState_ = 0;
+    volatile unsigned long lastEdgeMicros_ = 0;
 
     void IRAM_ATTR onChange();
     static void IRAM_ATTR isrTrampoline();
