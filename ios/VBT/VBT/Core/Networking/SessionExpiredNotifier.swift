@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// Odpowiednik `data/remote/SessionExpiredNotifier.kt` — sygnalizuje UI (np. RootView),
 /// że token JWT wygasł (401 poza endpointami logowania) i trzeba wrócić do ekranu logowania.
