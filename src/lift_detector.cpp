@@ -37,8 +37,11 @@ void LiftDetector::update(unsigned long currentMicros) {
     lastTimeMicros = currentMicros;
 
     int64_t currentPositionRaw = encoder->getCount();
-    float rawVelocitySteps = (float)(currentPositionRaw - lastPosition) / dt_s;
-    float rawVelocityMs = rawVelocitySteps / STEPS_PER_METER;
+    float deltaSteps = (float)(currentPositionRaw - lastPosition);
+    // Konwersja kroków na dystans przez dynamiczny model rolki (zmienny
+    // promień w miarę odwijania/nawijania linki) - patrz spool_model.h
+    float distanceDelta = spoolModel.stepsToDistance(deltaSteps, RAD_PER_STEP);
+    float rawVelocityMs = distanceDelta / dt_s;
 
     // Filtrowanie EMA (Exponential Moving Average)
     currentVelocityEMA = (ALPHA * rawVelocityMs) + ((1.0f - ALPHA) * currentVelocityEMA);
@@ -48,6 +51,8 @@ void LiftDetector::update(unsigned long currentMicros) {
         lastPosition = currentPositionRaw;
         return;
     }
+
+    cumulativeDistance += distanceDelta;
 
     if (!isLifting) {
         // Detekcja rozpoczęcia podniesienia - zablokowana na POST_REP_LOCKOUT_MS
