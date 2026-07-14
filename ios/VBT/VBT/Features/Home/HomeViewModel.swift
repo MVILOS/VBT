@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// Port 1:1 z Android `HomeViewModel.kt`.
 @Observable
