@@ -36,7 +36,9 @@ final class APIClient {
     }
 
     /// Żądanie bez treści odpowiedzi (np. DELETE -> 204/200 bez body).
-    func send(_ endpoint: Endpoint) async throws {
+    /// Nazwa celowo różna od `send<T:Decodable>` — przeciążenie po samym typie zwracanym
+    /// (`Void` vs generyk) jest niejednoznaczne dla kompilatora, gdy wynik jest odrzucany.
+    func sendNoContent(_ endpoint: Endpoint) async throws {
         _ = try await sendRaw(endpoint)
     }
 
