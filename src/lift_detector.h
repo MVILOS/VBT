@@ -41,7 +41,8 @@ private:
     float velocitySum;
     uint16_t velocitySampleCount;
     unsigned long liftStartTime;
-    int64_t startPosition;
+    float startDistance;
+    float cumulativeDistance;
     unsigned long lastRepEndTime;
     uint8_t belowEndThresholdCount;
 
