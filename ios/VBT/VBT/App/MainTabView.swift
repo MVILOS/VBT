@@ -31,7 +31,7 @@ struct MainTabView: View {
             .tabItem { Label("Schedule", systemImage: "calendar") }
 
             NavigationStack {
-                PlaceholderScreen(title: "Historia", subtitle: "Faza 5 planu portu — ekran w budowie.")
+                HistoryScreen(apiClient: apiClient)
             }
             .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
 
