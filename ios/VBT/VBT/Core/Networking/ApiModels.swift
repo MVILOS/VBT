@@ -6,8 +6,8 @@ import Foundation
 // MARK: - Authentication
 
 struct LoginRequest: Encodable {
-    var username: String?
-    var email: String?
+    var username: String? = nil
+    var email: String? = nil
     var password: String
 }
 
