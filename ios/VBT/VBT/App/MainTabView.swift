@@ -45,26 +45,3 @@ struct MainTabView: View {
         .tint(VbtColor.teal)
     }
 }
-
-/// Tymczasowy widok dla ekranów jeszcze nie przeniesionych z Androida — trzyma nawigację
-/// spójną już teraz, żeby kolejne fazy portu podłączały realną treść bez przebudowy shellu.
-private struct PlaceholderScreen: View {
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "hammer.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(VbtColor.textSecondary)
-            Text(subtitle)
-                .font(VbtFont.body)
-                .foregroundStyle(VbtColor.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(VbtColor.background)
-        .navigationTitle(title)
-    }
-}
