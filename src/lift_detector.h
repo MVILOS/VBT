@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "quad_encoder.h"
+#include "spool_model.h"
 
 // Struktura przechowująca wynik pojedynczego podniesienia
 struct LiftResult {
