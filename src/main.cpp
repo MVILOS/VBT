@@ -5,7 +5,15 @@
 #include "ble_server.h"
 
 // --- KONFIGURACJA SPRZĘTU (ESP32-C3 SuperMini) ---
-const float SPOOL_DIAMETER_M = 0.04;
+// Rolka fizycznie ma ok. 41.5mm "pustej" średnicy, ale przez nawijające się
+// na siebie zwoje linki rośnie w trakcie użycia do ok. 44mm - to źródło
+// narastającego błędu pomiaru, bo poniższa stała jest wartością stałą, a nie
+// dynamicznym modelem. Użyto wartości średniej z zakresu 41.5-44mm, żeby
+// zminimalizować maksymalny błąd w obie strony (dawne 0.04 = 40mm było
+// zwyczajnie błędne, poza całym zakresem rzeczywistej średnicy).
+// Pełna korekta wymagałaby dynamicznego modelu narastania średnicy zależnego
+// od nawiniętej długości linki (grubość linki + średnica rdzenia rolki).
+const float SPOOL_DIAMETER_M = 0.04275;
 const float PI_VAL = 3.14159265359;
 const float SPOOL_CIRCUMFERENCE = SPOOL_DIAMETER_M * PI_VAL;
 const float ENCODER_PPR = 1200.0;
