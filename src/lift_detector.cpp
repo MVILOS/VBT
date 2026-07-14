@@ -66,7 +66,7 @@ void LiftDetector::update(unsigned long currentMicros) {
             velocitySampleCount = 0;
             belowEndThresholdCount = 0;
             liftStartTime = millis();
-            startPosition = currentPositionRaw;
+            startDistance = cumulativeDistance;
             Serial.println("Rozpoczęcie podniesienia");
         }
     } else {
