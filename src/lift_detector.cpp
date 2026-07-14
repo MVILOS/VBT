@@ -42,6 +42,7 @@ void LiftDetector::update(unsigned long currentMicros) {
     // promień w miarę odwijania/nawijania linki) - patrz spool_model.h
     float distanceDelta = spoolModel.stepsToDistance(deltaSteps, RAD_PER_STEP);
     float rawVelocityMs = distanceDelta / dt_s;
+    cumulativeDistance += distanceDelta;
 
     // Filtrowanie EMA (Exponential Moving Average)
     currentVelocityEMA = (ALPHA * rawVelocityMs) + ((1.0f - ALPHA) * currentVelocityEMA);
@@ -51,8 +52,6 @@ void LiftDetector::update(unsigned long currentMicros) {
         lastPosition = currentPositionRaw;
         return;
     }
-
-    cumulativeDistance += distanceDelta;
 
     if (!isLifting) {
         // Detekcja rozpoczęcia podniesienia - zablokowana na POST_REP_LOCKOUT_MS
