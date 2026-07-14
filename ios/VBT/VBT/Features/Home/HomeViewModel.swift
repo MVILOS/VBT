@@ -34,7 +34,7 @@ final class HomeViewModel {
         isLoading = true
         var anyNetworkFailure = false
 
-        let today = ISO8601DateFormatter.dateOnly.string(from: Date())
+        let today = Self.dateOnlyFormatter.string(from: Date())
 
         do {
             todayEntries = try await apiClient.send(.getCalendarEntries(dateStart: today, dateEnd: today))
