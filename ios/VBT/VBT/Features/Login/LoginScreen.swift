@@ -22,7 +22,7 @@ struct LoginScreen: View {
         if let viewModel {
             LoginForm(viewModel: viewModel, showRegister: $showRegister)
         } else {
-            Color(VbtColor.background).ignoresSafeArea()
+            VbtColor.background.ignoresSafeArea()
         }
     }
 }
