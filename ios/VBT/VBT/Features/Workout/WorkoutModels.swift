@@ -22,12 +22,19 @@ let freeMeasurementExercise = ExerciseDto(
     description: "Swobodny pomiar prędkości/mocy bez przypisania do ćwiczenia z bazy."
 )
 
+/// `RepResultDto.id` jest `Int?` (nil dopóki serwer nie przydzieli ID) - do wyświetlania
+/// w listach `ForEach` potrzebny jest stabilny lokalny identyfikator niezależny od serwera.
+struct WorkoutRep: Identifiable {
+    let id = UUID()
+    var dto: RepResultDto
+}
+
 struct CompletedSetSnapshot: Identifiable {
     let id = UUID()
     let setNumber: Int
     let exerciseName: String
     let loadKg: Float
-    let reps: [RepResultDto]
+    let reps: [WorkoutRep]
 }
 
 struct WorkoutExerciseState {
