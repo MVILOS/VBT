@@ -17,9 +17,10 @@ struct LiftResult {
 class LiftDetector {
 private:
     QuadEncoder* encoder;
+    SpoolModel spoolModel;
 
     // Parametry konfiguracyjne
-    const float STEPS_PER_METER;
+    const float RAD_PER_STEP;
     const float ALPHA;
     float MIN_LIFT_VELOCITY;
     float END_LIFT_VELOCITY;
