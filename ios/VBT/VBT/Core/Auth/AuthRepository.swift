@@ -36,7 +36,7 @@ final class AuthRepository {
 
     func login(username: String, password: String) async -> Result<UserDto, Error> {
         do {
-            let response: LoginResponse = try await api.send(.login(LoginRequest(username: username, password: nil, password: password)))
+            let response: LoginResponse = try await api.send(.login(LoginRequest(username: username, password: password)))
             persist(response)
             return .success(response.user)
         } catch {
