@@ -32,6 +32,7 @@ struct HomeScreen: View {
 
 private struct HomeContent: View {
     @Bindable var viewModel: HomeViewModel
+    let apiClient: APIClient
 
     var body: some View {
         ScrollView {
