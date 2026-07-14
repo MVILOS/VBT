@@ -36,15 +36,16 @@ jobs:
       # (obraz przesunął się na linię iPhone 16) — CI używa więc dowolnego dostępnego
       # symulatora iOS tylko po to, żeby zweryfikować kompilację/testy jednostkowe.
       # Realny test UI/BLE na iPhone 15 Pro i tak wymaga fizycznego urządzenia (patrz README).
-      # Wybieramy konkretne UDID (nie tylko nazwę) - "OS:latest" w -destination potrafi
-      # nie trafić na runtime przypisany do wybranego urządzenia, jeśli na runnerze jest
-      # kilka zainstalowanych wersji iOS.
-      - name: Pick available iOS Simulator
+      # `simctl list devices available` i to, co xcodebuild faktycznie akceptuje jako
+      # destination dla tego schematu, to dwie różne listy (widzieliśmy UDID z simctl
+      # odrzucany przez xcodebuild jako "unable to find a destination"). Pytamy więc
+      # bezpośrednio xcodebuild -showdestinations o listę, którą sam uzna za poprawną.
+      - name: Show and pick a valid destination
         id: sim
         run: |
-          UDID=$(xcrun simctl list devices available -j \
-            | python3 -c "import json,sys; data=json.load(sys.stdin)['devices']; ids=[d['udid'] for runtime in data for d in data[runtime] if d.get('isAvailable') and 'iPhone' in d['name']]; print(ids[0] if ids else '')")
-          if [ -z "$UDID" ]; then echo "No iPhone simulator found" >&2; xcrun simctl list devices available; exit 1; fi
+          xcodebuild -showdestinations -project VBT.xcodeproj -scheme VBT CODE_SIGNING_ALLOWED=NO 2>&1 | tee destinations.txt
+          UDID=$(grep -o "platform:iOS Simulator, id:[^,]*" destinations.txt | head -1 | sed 's/.*id://')
+          if [ -z "$UDID" ]; then echo "No iOS Simulator destination found" >&2; exit 1; fi
           echo "Using simulator UDID: $UDID"
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
 
