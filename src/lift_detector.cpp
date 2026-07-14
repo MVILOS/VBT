@@ -1,8 +1,9 @@
 #include "lift_detector.h"
 
-LiftDetector::LiftDetector(QuadEncoder* enc, float stepsPerMeter)
+LiftDetector::LiftDetector(QuadEncoder* enc, SpoolModel spoolModel, float encoderPPR)
     : encoder(enc),
-      STEPS_PER_METER(stepsPerMeter),
+      spoolModel(spoolModel),
+      RAD_PER_STEP(2.0f * PI / encoderPPR),
       ALPHA(0.20f),
       MIN_REP_DURATION(350),
       isLifting(false),
@@ -10,7 +11,8 @@ LiftDetector::LiftDetector(QuadEncoder* enc, float stepsPerMeter)
       velocitySum(0.0f),
       velocitySampleCount(0),
       liftStartTime(0),
-      startPosition(0),
+      startDistance(0.0f),
+      cumulativeDistance(0.0f),
       lastRepEndTime(0),
       belowEndThresholdCount(0),
       lastTimeMicros(0),
