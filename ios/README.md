@@ -11,6 +11,14 @@ Port natywnej aplikacji Android (`android/vbt-app`) na iOS (SwiftUI, iOS 17+), z
   nie jest trzymany w repo, generuje się z `project.yml`.
 - Fizyczny iPhone (najlepiej iPhone 15 Pro) do testów BLE — symulator iOS nie obsługuje Bluetooth.
 
+## CI (weryfikacja bez Maca)
+
+Ten kod powstał bez dostępu do macOS/Xcode — jedyny sposób sprawdzenia, że się kompiluje,
+to GitHub Actions z runnerem `macos-15` (workflow `.github/workflows/ios-build.yml`).
+Uruchamia się automatycznie przy push/PR dotykającym `ios/**`, generuje projekt przez
+XcodeGen i robi `xcodebuild build` + `xcodebuild test` na symulatorze iPhone 15 Pro.
+Sprawdź zakładkę Actions na GitHubie po każdym pushu — to zastępuje lokalny build.
+
 ## Generowanie projektu
 
 ```bash
