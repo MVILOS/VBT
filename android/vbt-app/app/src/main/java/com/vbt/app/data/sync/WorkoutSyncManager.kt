@@ -56,6 +56,22 @@ class WorkoutSyncManager @Inject constructor(
     }
 
     /**
+     * Przekształca powtórzenia danej serii czekające jeszcze w kolejce (np. po
+     * korekcie ciężaru w trakcie serii - trzeba poprawić loadKg/moc/1RM zanim
+     * polecą na serwer).
+     */
+    fun updatePendingReps(sessionId: Int, setNumber: Int, transform: (RepResultDto) -> RepResultDto) {
+        synchronized(pendingReps) {
+            for (i in pendingReps.indices) {
+                val rep = pendingReps[i]
+                if (rep.sessionId == sessionId && rep.setNumber == setNumber) {
+                    pendingReps[i] = transform(rep)
+                }
+            }
+        }
+    }
+
+    /**
      * Startuje sesję live na serwerze i zapisuje przydzielone serverSessionId
      * w lokalnej sesji Room. Zwraca null gdy offline / błąd (sesja zostanie
      * zsynchronizowana później przez syncSession/SessionSyncWorker).
