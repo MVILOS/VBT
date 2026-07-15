@@ -219,6 +219,10 @@ def update_rep(
 
     if data.load_kg is not None:
         rep.load_kg = data.load_kg
+        # Moc zależy od ciężaru (P = m*g*v_mean) - po korekcie kg musi zostać
+        # przeliczona, inaczej w analityce zostałaby moc ze starego ciężaru.
+        if rep.mean_velocity:
+            rep.power_watts = rep.load_kg * 9.81 * rep.mean_velocity
     if data.set_number is not None:
         rep.set_number = data.set_number
     if data.rep_number is not None:
