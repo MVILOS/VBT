@@ -501,6 +501,7 @@ class WorkoutViewModel @Inject constructor(
 
             _currentVelocityBuffer.value.clear()
             peakVelocity = 0f
+            queuedRepNumbersInSet.clear()
 
             // Create/find local exercise and set if session is active
             if (localSessionId > 0) {
