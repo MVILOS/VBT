@@ -124,6 +124,8 @@ class WorkoutRepository @Inject constructor(
         )
     }
 
+    suspend fun updateRep(rep: RepResultEntity) = repResultDao.update(rep)
+
     fun getRepsForSet(setId: Long): Flow<List<RepResultEntity>> = repResultDao.getRepsForSet(setId)
 
     suspend fun getRepsForSetOnce(setId: Long): List<RepResultEntity> = repResultDao.getRepsForSetOnce(setId)
