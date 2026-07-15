@@ -19,6 +19,13 @@ final class CalculatePowerUseCaseTests: XCTestCase {
         XCTAssertEqual(useCase.meanPower(loadKg: 100, distanceM: 0.5, durationMs: 500), 981, accuracy: 0.01)
     }
 
+    func testMocSredniaLiczonaBezposrednioZeSredniejPredkosci() {
+        // 100 kg * 9.81 * 0.5 m/s = 490.5 W
+        XCTAssertEqual(useCase.meanPower(loadKg: 100, meanVelocityMs: 0.5), 490.5, accuracy: 0.01)
+        // 60 kg * 9.81 * 0.8 m/s = 470.88 W
+        XCTAssertEqual(useCase.meanPower(loadKg: 60, meanVelocityMs: 0.8), 470.88, accuracy: 0.01)
+    }
+
     func testZerowyLubUjemnyCzasTrwaniaDajeZeroMocy() {
         XCTAssertEqual(useCase.meanPower(loadKg: 100, distanceM: 0.5, durationMs: 0), 0)
         XCTAssertEqual(useCase.meanPower(loadKg: 100, distanceM: 0.5, durationMs: -100), 0)
