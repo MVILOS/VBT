@@ -701,8 +701,28 @@ class WorkoutViewModel @Inject constructor(
 
     fun finishWorkout() {
         cancelAutoFinish()
+        // Ekran nawiguje wstecz od razu po finishWorkout(), co kasuje ViewModel
+        // i anuluje viewModelScope - bez NonCancellable finalizacja urywała się
+        // po pierwszym suspend i ostatnia seria nie trafiała na serwer.
+        // Dispatchers.Main.immediate gwarantuje, że blok wystartuje (i wejdzie
+        // w NonCancellable) jeszcze przed obsłużeniem nawigacji.
         viewModelScope.launch {
+            withContext(NonCancellable) {
             val state = _uiState.value
+
+            // Ostatnia (niedomknięta) seria do podsumowania na ekranie FINISHED
+            if (state.completedRepsInSet.isNotEmpty()) {
+                _uiState.update {
+                    it.copy(
+                        completedSets = it.completedSets + CompletedSetSnapshot(
+                            setNumber = state.currentSetIndex + 1,
+                            exerciseName = state.currentExerciseName,
+                            loadKg = state.currentLoadKg,
+                            reps = state.completedRepsInSet
+                        )
+                    )
+                }
+            }
 
             // Finish current set in Room (if has reps)
             if (currentSetId > 0 && state.completedRepsInSet.isNotEmpty()) {
