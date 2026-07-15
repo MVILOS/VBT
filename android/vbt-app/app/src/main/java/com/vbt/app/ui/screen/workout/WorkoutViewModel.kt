@@ -420,6 +420,7 @@ class WorkoutViewModel @Inject constructor(
             _currentVelocityBuffer.value.clear()
             peakVelocity = 0f
             resetHeartRateStats()
+            queuedRepNumbersInSet.clear()
 
             val athleteId = _uiState.value.sessionAthleteId
 
