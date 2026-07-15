@@ -10,6 +10,11 @@ class CalculatePowerUseCase @Inject constructor() {
         return force * meanVelocity
     }
 
+    fun calculateMeanPower(loadKg: Float, meanVelocityMs: Float): Float {
+        val force = loadKg * 9.81f
+        return force * meanVelocityMs
+    }
+
     fun calculatePeakPower(loadKg: Float, peakVelocityMs: Float): Float {
         val force = loadKg * 9.81f
         return force * peakVelocityMs
