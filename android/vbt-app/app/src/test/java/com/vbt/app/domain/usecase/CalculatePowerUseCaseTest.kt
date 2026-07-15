@@ -24,6 +24,14 @@ class CalculatePowerUseCaseTest {
     }
 
     @Test
+    fun `moc srednia liczona bezposrednio ze sredniej predkosci`() {
+        // 100 kg * 9.81 * 0.5 m/s = 490.5 W
+        assertEquals(490.5f, useCase.calculateMeanPower(100f, 0.5f), 0.01f)
+        // 60 kg * 9.81 * 0.8 m/s = 470.88 W
+        assertEquals(470.88f, useCase.calculateMeanPower(60f, 0.8f), 0.01f)
+    }
+
+    @Test
     fun `zerowy lub ujemny czas trwania daje zero mocy`() {
         assertEquals(0f, useCase.calculateMeanPower(100f, 0.5f, 0), 0.0f)
         assertEquals(0f, useCase.calculateMeanPower(100f, 0.5f, -100), 0.0f)
