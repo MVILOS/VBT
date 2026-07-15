@@ -660,6 +660,7 @@ class WorkoutViewModel @Inject constructor(
 
     fun finishSet() {
         cancelAutoFinish()
+        queuedRepNumbersInSet.clear()
         val state = _uiState.value
         val snapshot = CompletedSetSnapshot(
             setNumber = state.currentSetIndex + 1,
