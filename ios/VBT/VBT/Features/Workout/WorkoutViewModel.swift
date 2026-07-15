@@ -165,7 +165,9 @@ final class WorkoutViewModel {
     func onRepReceived(_ rep: RepFromDevice) {
         guard !isPaused, mode == .active else { return }
 
-        let power = calculatePower.peakPower(loadKg: currentLoadKg, peakVelocityMs: rep.peakVelocityMs)
+        // Moc = siła * ŚREDNIA prędkość koncentryczna (konwencja VBT dla "mean power");
+        // peak velocity służy tylko do stref/wyświetlania, nie do mocy.
+        let power = calculatePower.meanPower(loadKg: currentLoadKg, meanVelocityMs: rep.meanVelocityMs)
         let repNumber = completedRepsInSet.count + 1
 
         let dto = RepResultDto(
