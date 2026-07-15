@@ -9,6 +9,11 @@ struct CalculatePowerUseCase {
         return force * meanVelocity
     }
 
+    func meanPower(loadKg: Float, meanVelocityMs: Float) -> Float {
+        let force = loadKg * 9.81
+        return force * meanVelocityMs
+    }
+
     func peakPower(loadKg: Float, peakVelocityMs: Float) -> Float {
         let force = loadKg * 9.81
         return force * peakVelocityMs
