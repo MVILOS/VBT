@@ -168,6 +168,11 @@ class WorkoutViewModel @Inject constructor(
     private var hrCount: Int = 0
     private var hrMax: Int = 0
 
+    // Numery powtórzeń bieżącej serii, które trafiły już do kolejki live-sync
+    // (onRepReceived). finishWorkout dokolejkowuje tylko pozostałe - bez tego
+    // ostatnia seria szłaby na serwer podwójnie. Czyszczone na granicy serii.
+    private val queuedRepNumbersInSet = mutableSetOf<Int>()
+
     // Resume: when navigated from History with an existing session
     private val resumeSessionId: Long = savedStateHandle.get<Long>("resumeSessionId") ?: 0L
 
