@@ -786,6 +786,7 @@ class WorkoutViewModel @Inject constructor(
 
             _currentVelocityBuffer.value.clear()
             peakVelocity = 0f
+            queuedRepNumbersInSet.clear()
 
             // Create new set in Room for the new exercise
             if (localSessionId > 0) {
