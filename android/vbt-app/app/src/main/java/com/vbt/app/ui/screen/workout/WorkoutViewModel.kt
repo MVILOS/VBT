@@ -592,6 +592,7 @@ class WorkoutViewModel @Inject constructor(
                         estimated1rm = estimate1RM.estimate(state.currentLoadKg, rep.meanVelocityMs, repNumber),
                         timestamp = null
                     ))
+                    queuedRepNumbersInSet.add(repNumber)
                 }
             }
 
