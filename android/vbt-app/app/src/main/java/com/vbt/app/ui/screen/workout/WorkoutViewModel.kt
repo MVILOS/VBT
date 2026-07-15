@@ -628,6 +628,46 @@ class WorkoutViewModel @Inject constructor(
 
     fun editCurrentLoad(newKg: Float) {
         _uiState.update { it.copy(currentLoadKg = newKg) }
+        viewModelScope.launch {
+            // Utrwal nowy ciężar w Room - bez tego offline-sync i Historia
+            // widziałyby ciężar z momentu utworzenia serii.
+            if (currentSetId > 0) {
+                workoutRepository.updateSetLoad(currentSetId, newKg)
+            }
+
+            // Edycja w trakcie serii to korekta pomyłki przy wpisywaniu -
+            // przelicz moc powtórzeń już zarejestrowanych w tej serii.
+            if (_uiState.value.completedRepsInSet.isNotEmpty()) {
+                if (currentSetId > 0) {
+                    workoutRepository.getRepsForSetOnce(currentSetId).forEach { rep ->
+                        workoutRepository.updateRep(
+                            rep.copy(powerW = calculatePower.calculateMeanPower(newKg, rep.maxVelocityMs))
+                        )
+                    }
+                }
+                _uiState.update { state ->
+                    val recalc = { rep: RepResultEntity ->
+                        if (rep.sessionSetId == currentSetId)
+                            rep.copy(powerW = calculatePower.calculateMeanPower(newKg, rep.maxVelocityMs))
+                        else rep
+                    }
+                    state.copy(
+                        completedRepsInSet = state.completedRepsInSet.map(recalc),
+                        allReps = state.allReps.map(recalc)
+                    )
+                }
+                // Popraw też powtórzenia czekające w kolejce live-sync
+                serverSessionId?.let { servId ->
+                    syncManager.updatePendingReps(servId, _uiState.value.currentSetIndex + 1) { dto ->
+                        dto.copy(
+                            loadKg = newKg.toDouble(),
+                            powerWatts = calculatePower.calculateMeanPower(newKg, dto.meanVelocity.toFloat()).toDouble(),
+                            estimated1rm = estimate1RM.estimate(newKg, dto.meanVelocity.toFloat(), dto.repNumber)
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun addExtraSet() {
@@ -708,90 +748,90 @@ class WorkoutViewModel @Inject constructor(
         // w NonCancellable) jeszcze przed obsłużeniem nawigacji.
         viewModelScope.launch {
             withContext(NonCancellable) {
-            val state = _uiState.value
+                val state = _uiState.value
 
-            // Ostatnia (niedomknięta) seria do podsumowania na ekranie FINISHED
-            if (state.completedRepsInSet.isNotEmpty()) {
-                _uiState.update {
-                    it.copy(
-                        completedSets = it.completedSets + CompletedSetSnapshot(
-                            setNumber = state.currentSetIndex + 1,
-                            exerciseName = state.currentExerciseName,
-                            loadKg = state.currentLoadKg,
-                            reps = state.completedRepsInSet
-                        )
-                    )
-                }
-            }
-
-            // Finish current set in Room (if has reps)
-            if (currentSetId > 0 && state.completedRepsInSet.isNotEmpty()) {
-                workoutRepository.finishSet(currentSetId)
-            }
-
-            // Update session status to finished in Room
-            if (localSessionId > 0) {
-                workoutRepository.finishSession(localSessionId)
-                // Zapisz statystyki tętna (tylko lokalnie - backend nie ma pól HR)
-                if (hrCount > 0) {
-                    workoutRepository.updateSessionHeartRate(
-                        sessionId = localSessionId,
-                        avgHeartRate = (hrSum / hrCount).toInt(),
-                        maxHeartRate = hrMax
-                    )
-                }
-            }
-
-            // Finalize server session
-            val servId = serverSessionId
-            if (servId != null) {
-                // Dokolejkuj TYLKO powtórzenia, które nie trafiły do kolejki na
-                // bieżąco w onRepReceived (np. serverSessionId pojawił się w
-                // trakcie serii) - reszta już tam czeka i poszłaby podwójnie.
-                val unsentReps = state.completedRepsInSet.filter { it.repNumber !in queuedRepNumbersInSet }
-                if (unsentReps.isNotEmpty()) {
-                    val serverEx = syncManager.resolveServerExercise(state.currentExerciseName, category = null)
-                    if (serverEx != null) {
-                        unsentReps.forEach { rep ->
-                            syncManager.queueRep(RepResultDto(
-                                id = null, sessionId = servId,
-                                exerciseId = serverEx.id,
+                // Ostatnia (niedomknięta) seria do podsumowania na ekranie FINISHED
+                if (state.completedRepsInSet.isNotEmpty()) {
+                    _uiState.update {
+                        it.copy(
+                            completedSets = it.completedSets + CompletedSetSnapshot(
                                 setNumber = state.currentSetIndex + 1,
-                                repNumber = rep.repNumber,
-                                meanVelocity = rep.maxVelocityMs.toDouble(),
-                                peakVelocity = effectivePeak(rep).toDouble(),
-                                loadKg = state.currentLoadKg.toDouble(),
-                                powerWatts = rep.powerW.toDouble(),
-                                estimated1rm = estimate1RM.estimate(
-                                    state.currentLoadKg,
-                                    rep.maxVelocityMs,
-                                    state.completedRepsInSet.size
-                                ),
-                                timestamp = null
-                            ))
+                                exerciseName = state.currentExerciseName,
+                                loadKg = state.currentLoadKg,
+                                reps = state.completedRepsInSet
+                            )
+                        )
+                    }
+                }
+
+                // Finish current set in Room (if has reps)
+                if (currentSetId > 0 && state.completedRepsInSet.isNotEmpty()) {
+                    workoutRepository.finishSet(currentSetId)
+                }
+
+                // Update session status to finished in Room
+                if (localSessionId > 0) {
+                    workoutRepository.finishSession(localSessionId)
+                    // Zapisz statystyki tętna (tylko lokalnie - backend nie ma pól HR)
+                    if (hrCount > 0) {
+                        workoutRepository.updateSessionHeartRate(
+                            sessionId = localSessionId,
+                            avgHeartRate = (hrSum / hrCount).toInt(),
+                            maxHeartRate = hrMax
+                        )
+                    }
+                }
+
+                // Finalize server session
+                val servId = serverSessionId
+                if (servId != null) {
+                    // Dokolejkuj TYLKO powtórzenia, które nie trafiły do kolejki na
+                    // bieżąco w onRepReceived (np. serverSessionId pojawił się w
+                    // trakcie serii) - reszta już tam czeka i poszłaby podwójnie.
+                    val unsentReps = state.completedRepsInSet.filter { it.repNumber !in queuedRepNumbersInSet }
+                    if (unsentReps.isNotEmpty()) {
+                        val serverEx = syncManager.resolveServerExercise(state.currentExerciseName, category = null)
+                        if (serverEx != null) {
+                            unsentReps.forEach { rep ->
+                                syncManager.queueRep(RepResultDto(
+                                    id = null, sessionId = servId,
+                                    exerciseId = serverEx.id,
+                                    setNumber = state.currentSetIndex + 1,
+                                    repNumber = rep.repNumber,
+                                    meanVelocity = rep.maxVelocityMs.toDouble(),
+                                    peakVelocity = effectivePeak(rep).toDouble(),
+                                    loadKg = state.currentLoadKg.toDouble(),
+                                    powerWatts = rep.powerW.toDouble(),
+                                    estimated1rm = estimate1RM.estimate(
+                                        state.currentLoadKg,
+                                        rep.maxVelocityMs,
+                                        state.completedRepsInSet.size
+                                    ),
+                                    timestamp = null
+                                ))
+                            }
+                        }
+                    }
+                    // Push final reps + mark session as finished
+                    val now = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+                    val flushed = syncManager.flushPendingReps(servId, finishedAt = now)
+                    if (!flushed) {
+                        Log.w(TAG, "finishWorkout: nie udało się domknąć sesji live $servId na serwerze")
+                        _uiState.update { it.copy(error = "Nie udało się wysłać końcówki treningu - dane są zapisane lokalnie") }
+                    }
+                } else {
+                    // No live session on server – do a full sync now (from Room)
+                    val synced = localSessionId > 0 && syncManager.syncSession(localSessionId)
+                    if (!synced) {
+                        Log.w(TAG, "finishWorkout: synchronizacja offline nieudana - kolejkuję SessionSyncWorker")
+                        SessionSyncWorker.enqueue(appContext)
+                        _uiState.update {
+                            it.copy(error = "Brak połączenia - trening zapisany lokalnie, zostanie zsynchronizowany automatycznie")
                         }
                     }
                 }
-                // Push final reps + mark session as finished
-                val now = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-                val flushed = syncManager.flushPendingReps(servId, finishedAt = now)
-                if (!flushed) {
-                    Log.w(TAG, "finishWorkout: nie udało się domknąć sesji live $servId na serwerze")
-                    _uiState.update { it.copy(error = "Nie udało się wysłać końcówki treningu - dane są zapisane lokalnie") }
-                }
-            } else {
-                // No live session on server – do a full sync now (from Room)
-                val synced = localSessionId > 0 && syncManager.syncSession(localSessionId)
-                if (!synced) {
-                    Log.w(TAG, "finishWorkout: synchronizacja offline nieudana - kolejkuję SessionSyncWorker")
-                    SessionSyncWorker.enqueue(appContext)
-                    _uiState.update {
-                        it.copy(error = "Brak połączenia - trening zapisany lokalnie, zostanie zsynchronizowany automatycznie")
-                    }
-                }
-            }
 
-            _uiState.update { it.copy(mode = WorkoutMode.FINISHED) }
+                _uiState.update { it.copy(mode = WorkoutMode.FINISHED) }
             }
         }
     }
