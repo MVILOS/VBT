@@ -792,6 +792,7 @@ class WorkoutViewModel @Inject constructor(
             }
 
             _uiState.update { it.copy(mode = WorkoutMode.FINISHED) }
+            }
         }
     }
 
