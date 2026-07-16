@@ -183,29 +183,66 @@ private fun TopInfo(state: RecordingUiState, modifier: Modifier = Modifier) {
 @Composable
 private fun LiveOverlay(state: RecordingUiState, modifier: Modifier = Modifier) {
     val zone = VelocityZone.fromVelocity(state.liveVelocity)
-    Row(
+    // Podgląd metryk odzwierciedla dokładnie to, co zostanie wypalone: te same
+    // wartości (OverlaySnapshot) i ten sam zestaw OverlayMetric co przy eksporcie.
+    val snapshot = OverlaySnapshot(
+        timeMs = 0,
+        exerciseName = state.exerciseName,
+        athleteName = state.athleteName,
+        loadKg = state.loadKg,
+        liveVelocityMs = state.liveVelocity,
+        repCount = state.repCount,
+        lastRepMeanVelocityMs = state.lastRepMeanVelocityMs,
+        lastRepPeakVelocityMs = state.lastRepPeakVelocityMs,
+        lastRepPowerW = state.lastRepPowerW,
+        lastRepDistanceM = state.lastRepDistanceM,
+        heartRate = state.heartRate
+    )
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .padding(bottom = 120.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Color.Black.copy(alpha = 0.5f))
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(16.dp)
     ) {
-        Column {
-            Text(
-                String.format("%.2f", state.liveVelocity),
-                color = zone.color,
-                fontSize = 44.sp,
-                fontWeight = FontWeight.Bold
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("REP ${state.repCount}", color = VbtTeal, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(10.dp))
             Text(zone.label.uppercase(), color = zone.color, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.weight(1f))
+            Text(
+                "${String.format("%.2f", state.liveVelocity)} m/s",
+                color = zone.color, fontSize = 22.sp, fontWeight = FontWeight.Bold
+            )
+            state.heartRate?.let {
+                Spacer(Modifier.width(10.dp))
+                Text("♥ $it", color = Color(0xFFFF5252), fontSize = 15.sp)
+            }
         }
-        Spacer(Modifier.weight(1f))
-        Column(horizontalAlignment = Alignment.End) {
-            Text("REP ${state.repCount}", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            state.heartRate?.let { Text("♥ $it", color = Color(0xFFFF5252), fontSize = 15.sp) }
+        if (state.selectedMetrics.isNotEmpty()) {
+            Spacer(Modifier.height(10.dp))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                state.selectedMetrics.forEach { metric ->
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            metric.format(metric.value(snapshot)),
+                            color = if (metric.isVelocity) zone.color else VbtTeal,
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            if (metric.unit.isEmpty()) metric.label else "${metric.label} (${metric.unit})",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+            }
         }
     }
 }
