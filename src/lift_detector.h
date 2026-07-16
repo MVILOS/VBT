@@ -55,7 +55,7 @@ private:
     uint16_t repCount;
 
 public:
-    LiftDetector(QuadEncoder* enc, SpoolModel spoolModel, float encoderPPR);
+    LiftDetector(QuadEncoder* enc, float spoolRadiusM, float countsPerRev);
 
     // Główna metoda aktualizacji - wywoływana w loop()
     void update(unsigned long currentMicros);
