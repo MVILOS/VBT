@@ -190,7 +190,7 @@ export default function SessionDetailModal({ sessionId, onClose, onChanged }: Pr
                       <button disabled={saving}
                         onClick={() => { setSplitFor(splitFor === set.setNumber ? null : set.setNumber); setSplitLoad(String(set.loadKg)) }}
                         className="px-2.5 py-1.5 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-50">
-                        �somesplit ✂ Rozdziel
+                        ✂ Rozdziel
                       </button>
                     </div>
                   </div>
