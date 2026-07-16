@@ -54,6 +54,7 @@ data class RecordingUiState(
     val isRecording: Boolean get() = phase is RecordingPhase.Recording
 }
 
+@OptIn(FlowPreview::class)
 @UnstableApi
 @HiltViewModel
 class RecordingViewModel @Inject constructor(
