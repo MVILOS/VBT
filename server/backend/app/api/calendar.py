@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.db.database import get_db
-from app.models import User, CalendarEntry
+from app.models import User, CalendarEntry, AthleteCoach
 from app.schemas import CalendarEntryCreate, CalendarEntryUpdate, CalendarEntryResponse
 from app.core.security import get_current_user
 
