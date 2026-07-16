@@ -83,7 +83,7 @@ fun RecordingScreen(
             TopInfo(state, Modifier.align(Alignment.TopStart))
         } else {
             PermissionPrompt(
-                onRequest = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+                onRequest = { permissionLauncher.launch(requiredPermissions) },
                 modifier = Modifier.align(Alignment.Center)
             )
         }
