@@ -808,7 +808,7 @@ class WorkoutViewModel @Inject constructor(
                                         state.completedRepsInSet.size
                                     ),
                                     timestamp = null
-                                ))
+                                ), deviceTimestamp = rep.deviceTimestamp)
                             }
                         }
                     }
