@@ -37,6 +37,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val selected by viewModel.selectedMetrics.collectAsState()
+    val quality by viewModel.recordingQuality.collectAsState()
 
     Scaffold(
         topBar = {
