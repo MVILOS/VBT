@@ -211,8 +211,6 @@ private fun LiveOverlay(state: RecordingUiState, modifier: Modifier = Modifier) 
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("REP ${state.repCount}", color = VbtTeal, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.width(10.dp))
-            Text(zone.label.uppercase(), color = zone.color, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.weight(1f))
             Text(
                 "${String.format("%.2f", state.liveVelocity)} m/s",
