@@ -44,8 +44,62 @@ object DatabaseModule {
                     seedExercises(database.exerciseDao())
                 }
             }
+
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                super.onOpen(db)
+                renameLegacyExercises(db)
+            }
         })
         .build()
+    }
+
+    // Stare, dziwne nazwy ("Szturm ze sztangą...", "Szarpanie do rwania...",
+    // "Dobre rano...") zostają w lokalnej bazie po aktualizacji aplikacji, bo
+    // seed wykonuje się tylko przy pierwszej instalacji. Idempotentna zmiana
+    // przy każdym otwarciu bazy, tą samą mapą co migracja serwera
+    // (server/backend/app/main.py) - nazwa jest kluczem dopasowania ćwiczeń
+    // lokalnych do serwerowych (resolveServerExercise), więc obie strony muszą
+    // przejść na format "English (Polski)" jednocześnie.
+    private val LEGACY_RENAMES = mapOf(
+        "Rwanie (Snatch)" to "Snatch (Rwanie)",
+        "Zarzut (Clean)" to "Clean (Zarzut)",
+        "Wyrwanie (Jerk)" to "Jerk (Wyrzut)",
+        "Wyrwanie z rozkroku (Split Jerk)" to "Split Jerk (Wyrzut nożycowy)",
+        "Szturm (Push Jerk)" to "Push Jerk (Wyrzut siłowy)",
+        "Podrzut - Zarzut i Wyrwanie (Clean & Jerk)" to "Clean & Jerk (Podrzut)",
+        "Rwanie siłowe (Power Snatch)" to "Power Snatch (Rwanie siłowe)",
+        "Rwanie z wieszania (Hang Snatch)" to "Hang Snatch (Rwanie z zawieszenia)",
+        "Rwanie z klocków (Block Snatch)" to "Block Snatch (Rwanie z bloków)",
+        "Szarpanie do rwania (Snatch Pull)" to "Snatch Pull (Ciąg rwaniowy)",
+        "Szarpanie do rwania z wieszania (Hang Snatch Pull)" to "Hang Snatch Pull (Ciąg rwaniowy z zawieszenia)",
+        "Zarzut siłowy (Power Clean)" to "Power Clean (Zarzut siłowy)",
+        "Zarzut z wieszania (Hang Clean)" to "Hang Clean (Zarzut z zawieszenia)",
+        "Zarzut z klocków (Block Clean)" to "Block Clean (Zarzut z bloków)",
+        "Szarpanie do zarzutu (Clean Pull)" to "Clean Pull (Ciąg zarzutowy)",
+        "Szarpanie do zarzutu z wieszania (Hang Clean Pull)" to "Hang Clean Pull (Ciąg zarzutowy z zawieszenia)",
+        "Przysiad (Back Squat)" to "Back Squat (Przysiad tylny)",
+        "Przysiad przedni (Front Squat)" to "Front Squat (Przysiad przedni)",
+        "Martwy ciąg (Deadlift)" to "Deadlift (Martwy ciąg)",
+        "Martwy ciąg rumuński (Romanian Deadlift)" to "Romanian Deadlift (Martwy ciąg rumuński)",
+        "Wyciskanie leżąc (Bench Press)" to "Bench Press (Wyciskanie leżąc)",
+        "Wyciskanie żołnierskie (Overhead Press)" to "Overhead Press (Wyciskanie nad głowę)",
+        "Szturm ze sztangą (Push Press)" to "Push Press (Wyciskanie siłowe)",
+        "Przysiad skoczny (Jump Squat)" to "Jump Squat (Przysiad ze skokiem)",
+        "Wiosłowanie sztangą (Barbell Row)" to "Barbell Row (Wiosłowanie sztangą)",
+        "Dobre rano (Good Morning)" to "Good Morning (Skłon dzień dobry)"
+    )
+
+    private fun renameLegacyExercises(db: SupportSQLiteDatabase) {
+        LEGACY_RENAMES.forEach { (old, new) ->
+            // Guard na wypadek, gdyby nowa nazwa już istniała (np. dodana
+            // ręcznie) - UPDATE stworzyłby wtedy duplikat nazwy.
+            db.execSQL(
+                "UPDATE exercise_definitions SET name = ? " +
+                    "WHERE LOWER(name) = LOWER(?) " +
+                    "AND NOT EXISTS (SELECT 1 FROM exercise_definitions WHERE LOWER(name) = LOWER(?))",
+                arrayOf(new, old, new)
+            )
+        }
     }
 
     // Podstawowa baza ćwiczeń MVT (Minimum Velocity Threshold), replika listy
