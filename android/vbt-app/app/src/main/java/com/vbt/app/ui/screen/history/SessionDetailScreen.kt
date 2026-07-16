@@ -273,6 +273,44 @@ private fun EditWeightDialog(
 }
 
 @Composable
+private fun SplitSetDialog(
+    rep: RepResultDto,
+    onConfirm: (Double) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var text by remember { mutableStateOf(String.format(Locale.US, "%.1f", rep.loadKg)) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Rozdziel serię") },
+        text = {
+            Column {
+                Text(
+                    "Powtórzenia od ${rep.repNumber} w górę z serii ${rep.setNumber} " +
+                        "przejdą do nowej serii (np. gdy zmieniono obciążenie bez " +
+                        "naciśnięcia \"kolejna seria\"). Podaj ciężar nowej serii:"
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("Ciężar (kg)") },
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                text.replace(',', '.').toDoubleOrNull()?.let(onConfirm)
+            }) { Text("Rozdziel") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Anuluj") }
+        }
+    )
+}
+
+@Composable
 private fun SummarySection(session: WorkoutSessionDto) {
     Card(
         modifier = Modifier.fillMaxWidth(),
