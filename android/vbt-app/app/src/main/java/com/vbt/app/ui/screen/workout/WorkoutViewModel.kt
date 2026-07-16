@@ -665,7 +665,7 @@ class WorkoutViewModel @Inject constructor(
                     syncManager.updatePendingReps(servId, _uiState.value.currentSetIndex + 1) { dto ->
                         dto.copy(
                             loadKg = newKg.toDouble(),
-                            powerWatts = calculatePower.calculateMeanPower(newKg, dto.meanVelocity.toFloat()).toDouble(),
+                            powerWatts = calculatePower.calculatePeakPower(newKg, dto.peakVelocity.toFloat()).toDouble(),
                             estimated1rm = estimate1RM.estimate(newKg, dto.meanVelocity.toFloat(), dto.repNumber)
                         )
                     }
