@@ -67,6 +67,7 @@ object Routes {
     const val ATHLETE_PROFILE = "athlete_profile/{athleteId}"
     const val EXERCISE_LIST = "exercise_list"
     const val ANALYTICS = "analytics"
+    const val RECORD = "record?exercise={exercise}&load={load}&athlete={athlete}"
 }
 
 @Composable
