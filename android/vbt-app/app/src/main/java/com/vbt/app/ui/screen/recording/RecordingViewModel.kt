@@ -178,7 +178,16 @@ class RecordingViewModel @Inject constructor(
                 lastRepMean = rep.meanVelocityMs
                 lastRepPeak = if (rep.peakVelocityMs > 0f) rep.peakVelocityMs else rep.meanVelocityMs
                 lastRepPower = calculatePower.calculatePeakPower(_uiState.value.loadKg, lastRepPeak)
-                _uiState.update { it.copy(repCount = repCount) }
+                lastRepDist = rep.distanceM
+                _uiState.update {
+                    it.copy(
+                        repCount = repCount,
+                        lastRepMeanVelocityMs = lastRepMean,
+                        lastRepPeakVelocityMs = lastRepPeak,
+                        lastRepPowerW = lastRepPower,
+                        lastRepDistanceM = lastRepDist
+                    )
+                }
                 appendSnapshot()
             }
         }
