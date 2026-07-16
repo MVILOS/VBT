@@ -90,6 +90,14 @@ fun HomeScreen(
                     ),
                     modifier = Modifier.height(32.dp)
                 )
+
+                IconButton(onClick = onNavigateToSettings) {
+                    Icon(
+                        Icons.Filled.Settings,
+                        contentDescription = "Ustawienia",
+                        tint = VbtTextSecondary
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
