@@ -44,11 +44,28 @@ class WorkoutSyncManager @Inject constructor(
     // Powtórzenia oczekujące na push do trwającej sesji live na serwerze
     private val pendingReps = mutableListOf<RepResultDto>()
 
+    // Klucze (serverSessionId, deviceTimestamp) powtórzeń już zakolejkowanych.
+    // Gdy strumień BLE ma więcej niż jednego odbiorcę (np. dwie instancje
+    // WorkoutViewModel po ponownym wejściu na ekran treningu), każdy kolejkuje
+    // to samo powtórzenie - raz z bieżącą, raz z przestarzałą numeracją serii.
+    // deviceTimestamp (millis urządzenia w chwili powtórzenia) jednoznacznie
+    // identyfikuje fizyczne powtórzenie niezależnie od etykiet nadanych w UI.
+    private val seenDeviceKeys = mutableSetOf<Pair<Int, Long>>()
+
     val hasPendingReps: Boolean
         get() = synchronized(pendingReps) { pendingReps.isNotEmpty() }
 
-    fun queueRep(rep: RepResultDto) {
-        synchronized(pendingReps) { pendingReps.add(rep) }
+    fun queueRep(rep: RepResultDto, deviceTimestamp: Long? = null) {
+        synchronized(pendingReps) {
+            val sessionId = rep.sessionId
+            if (deviceTimestamp != null && deviceTimestamp > 0 && sessionId != null) {
+                if (!seenDeviceKeys.add(sessionId to deviceTimestamp)) {
+                    Log.w(TAG, "queueRep: pominięto duplikat (deviceTimestamp=$deviceTimestamp)")
+                    return
+                }
+            }
+            pendingReps.add(rep)
+        }
     }
 
     fun clearPendingReps() {
