@@ -7,6 +7,7 @@ import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { User, ExerciseDefinition } from '../types'
 import { formatDistanceToNow } from 'date-fns'
+import SessionDetailModal from '../components/SessionDetailModal'
 
 const tooltipStyle = {
   contentStyle: { backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: 6 },
