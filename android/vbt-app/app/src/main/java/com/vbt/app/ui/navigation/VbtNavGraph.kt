@@ -202,10 +202,24 @@ fun VbtNavGraph(
                 userRole = userRole,
                 content = {
                     WorkoutScreen(
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onRecordSet = { ex, load, athlete -> navController.navigateToRecord(ex, load, athlete) }
                     )
                 }
             )
+        }
+
+        // Ekran nagrywania podejścia (pełnoekranowy, bez dolnej nawigacji) -
+        // wypala parametry VBT w wideo i zapisuje do galerii.
+        composable(
+            route = Routes.RECORD,
+            arguments = listOf(
+                navArgument("exercise") { type = NavType.StringType; defaultValue = "" },
+                navArgument("load") { type = NavType.StringType; defaultValue = "0" },
+                navArgument("athlete") { type = NavType.StringType; defaultValue = "" }
+            )
+        ) {
+            RecordingScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(
