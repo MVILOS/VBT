@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, EmailStr
 
 from app.db.database import get_db
-from app.models import User
+from app.models import User, AthleteCoach
 from app.schemas import UserResponse
 from app.core.security import get_password_hash, get_current_user
 
