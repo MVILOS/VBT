@@ -67,6 +67,12 @@ def create_user(
     db.add(user)
     db.commit()
     db.refresh(user)
+    # Uprawnienia trenera (sesje, kalendarz, lista zawodników) sprawdzane są
+    # po relacji many-to-many athlete_coaches, nie po users.coach_id - samo
+    # ustawienie kolumny nie dałoby trenerowi realnego dostępu.
+    if user.coach_id:
+        db.add(AthleteCoach(athlete_id=user.id, coach_id=user.coach_id))
+        db.commit()
     return UserResponse.model_validate(user)
 
 
