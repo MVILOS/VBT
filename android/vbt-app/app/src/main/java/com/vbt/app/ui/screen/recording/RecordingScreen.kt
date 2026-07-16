@@ -135,7 +135,7 @@ fun RecordingScreen(
 }
 
 @Composable
-private fun CameraPreview(viewModel: RecordingViewModel) {
+private fun CameraPreview(recorder: com.vbt.app.recording.SetRecorder) {
     val lifecycleOwner = LocalLifecycleOwner.current
     AndroidView(
         modifier = Modifier.fillMaxSize(),
@@ -154,7 +154,7 @@ private fun CameraPreview(viewModel: RecordingViewModel) {
                     lifecycleOwner,
                     CameraSelector.DEFAULT_BACK_CAMERA,
                     preview,
-                    viewModel.recorder.videoCapture
+                    recorder.videoCapture
                 )
             }, ContextCompat.getMainExecutor(ctx))
             previewView
