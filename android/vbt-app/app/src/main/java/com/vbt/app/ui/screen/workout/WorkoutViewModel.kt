@@ -534,11 +534,7 @@ class WorkoutViewModel @Inject constructor(
                 )
             }
 
-            bleManager.setExerciseParams(
-                minLiftVel = exercise.mvt?.times(0.5f) ?: 0.3f,
-                endLiftVel = exercise.mvt?.times(0.7f) ?: 0.6f,
-                minRepDist = 0.15f
-            )
+            sendExerciseParams(exercise.mvt)
         }
     }
 
