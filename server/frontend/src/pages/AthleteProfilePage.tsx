@@ -284,6 +284,15 @@ export default function AthleteProfilePage() {
         </div>
       )}
 
+      {/* ── SESSION DETAIL / EDIT MODAL ── */}
+      {detailSessionId != null && (
+        <SessionDetailModal
+          sessionId={detailSessionId}
+          onClose={() => setDetailSessionId(null)}
+          onChanged={loadAll}
+        />
+      )}
+
       {/* ── ENTRY MODAL ── */}
       {showEntryModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
