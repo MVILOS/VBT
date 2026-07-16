@@ -112,7 +112,16 @@ def create_session(
     db.add(session)
     db.flush()
 
+    # Numeracja serii w aplikacji jest monotoniczna w obrębie sesji, więc
+    # (exercise_id, set_number, rep_number) jednoznacznie identyfikuje
+    # powtórzenie. Duplikaty w paczce (podwójne kolejkowanie po stronie
+    # aplikacji) są pomijane.
+    seen_reps = set()
     for rep in (session_data.reps or []):
+        key = (rep.exercise_id, rep.set_number, rep.rep_number)
+        if key in seen_reps:
+            continue
+        seen_reps.add(key)
         db.add(RepResult(
             session_id=session.id,
             exercise_id=rep.exercise_id,

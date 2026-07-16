@@ -126,7 +126,7 @@ fun VbtNavGraph(
                 userRole = userRole,
                 content = {
                     HomeScreen(
-                        onStartWorkout = { navController.navigate(Routes.WORKOUT) },
+                        onStartWorkout = { navController.navigate(Routes.WORKOUT) { launchSingleTop = true } },
                         onNavigateToHistory = { navController.navigate(Routes.HISTORY) },
                         onNavigateToPlans = { navController.navigate(Routes.PLAN_LIST) },
                         onNavigateToConnect = { navController.navigate(Routes.CONNECT) },
@@ -163,7 +163,7 @@ fun VbtNavGraph(
                     PlanListScreen(
                         onCreatePlan = { navController.navigate("plan_edit/0") },
                         onEditPlan = { id -> navController.navigate("plan_edit/$id") },
-                        onStartWorkout = { plan -> navController.navigate("workout?planId=${plan.id}") }
+                        onStartWorkout = { plan -> navController.navigate("workout?planId=${plan.id}") { launchSingleTop = true } }
                     )
                 }
             )
@@ -234,7 +234,7 @@ fun VbtNavGraph(
                         onStartWorkout = { planId, calendarEntryId, athleteId ->
                             navController.navigate(
                                 "workout?planId=${planId ?: -1}&calendarEntryId=$calendarEntryId&athleteId=$athleteId"
-                            )
+                            ) { launchSingleTop = true }
                         }
                     )
                 }
@@ -251,7 +251,7 @@ fun VbtNavGraph(
                             navController.navigate("session_detail/$sessionId")
                         },
                         onResumeSession = { localSessionId ->
-                            navController.navigate("workout?resumeSessionId=$localSessionId")
+                            navController.navigate("workout?resumeSessionId=$localSessionId") { launchSingleTop = true }
                         }
                     )
                 }
@@ -398,7 +398,7 @@ fun VbtBottomNavBar(navController: NavController, role: String?) {
             icon = { Icon(Icons.Filled.FitnessCenter, contentDescription = "Workout") },
             label = { Text("Workout") },
             selected = currentRoute == Routes.WORKOUT,
-            onClick = { navController.navigate(Routes.WORKOUT) },
+            onClick = { navController.navigate(Routes.WORKOUT) { launchSingleTop = true } },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = VbtTeal,
                 selectedTextColor = VbtTeal,
