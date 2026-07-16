@@ -74,6 +74,41 @@ fun SettingsScreen(
                 onToggle = viewModel::toggleMetric,
                 modifier = Modifier.padding(top = 8.dp)
             )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+            Text(
+                "Jakość nagrania",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 20.dp, bottom = 4.dp)
+            )
+            Text(
+                "Wyższa jakość = ostrzejsze wideo, ale większy plik i dłuższe wypalanie parametrów.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+            )
+            RecordingQuality.entries.forEach { option ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = option == quality,
+                            role = Role.RadioButton,
+                            onClick = { viewModel.setQuality(option) }
+                        )
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(selected = option == quality, onClick = { viewModel.setQuality(option) })
+                    Text(
+                        option.label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+            }
         }
     }
 }
