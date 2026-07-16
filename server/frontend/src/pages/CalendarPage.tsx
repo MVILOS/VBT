@@ -245,7 +245,9 @@ export default function CalendarPage() {
                 </div>
                 <div className="flex-1 bg-white/80 border border-gray-200 rounded-b-lg p-1.5 space-y-1.5">
                   {dayEntries.map(entry => {
-                    const athlete = athletes.find(a => a.id === entry.athlete_id)
+                    const athleteName = entry.athlete_id === user?.id
+                      ? `Ja (${user.username})`
+                      : athletes.find(a => a.id === entry.athlete_id)?.username
                     const color = getAthleteColor(entry.athlete_id)
                     const status = STATUS_STYLE[entry.status] ?? STATUS_STYLE.scheduled
                     const hasOverrides = !!entry.overrides_json
