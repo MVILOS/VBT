@@ -65,8 +65,7 @@ void setup() {
     encoder.clearCount();
 
     // 4. Inicjalizacja modułów
-    SpoolModel spoolModel(CORE_DIAMETER_M / 2.0f, CORD_THICKNESS_M, MAX_SPOOL_DIAMETER_M / 2.0f);
-    detector = new LiftDetector(&encoder, spoolModel, ENCODER_PPR);
+    detector = new LiftDetector(&encoder, SPOOL_DIAMETER_M / 2.0f, COUNTS_PER_REV);
     storage = new DataStorage();
     storage->init();
 
