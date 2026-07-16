@@ -20,6 +20,7 @@ import androidx.media3.effect.BitmapOverlay
 class MetricsOverlay(
     private val timeline: OverlayTimeline,
     private val renderer: OverlayRenderer,
+    private val metrics: List<OverlayMetric>,
     private val width: Int,
     private val height: Int
 ) : BitmapOverlay() {
@@ -32,7 +33,7 @@ class MetricsOverlay(
         val cached = cachedBitmap
         if (cached != null && snapshot === lastSnapshot) return cached
 
-        val bmp = renderer.render(snapshot, width, height)
+        val bmp = renderer.render(snapshot, metrics, width, height)
         lastSnapshot = snapshot
         cachedBitmap = bmp
         return bmp
