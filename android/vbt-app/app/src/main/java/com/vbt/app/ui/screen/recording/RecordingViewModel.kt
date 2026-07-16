@@ -82,7 +82,11 @@ class RecordingViewModel @Inject constructor(
         private const val LIVE_SAMPLE_MS = 66L
     }
 
-    val recorder = SetRecorder(appContext)
+    // Recorder tworzony dopiero, gdy znamy wybraną jakość z Ustawień (nie blokujemy
+    // wątku odczytem DataStore). Kamera wiąże się w RecordingScreen, gdy != null.
+    private val _recorder = MutableStateFlow<SetRecorder?>(null)
+    val recorder: StateFlow<SetRecorder?> = _recorder.asStateFlow()
+
     private val processor = VideoOverlayProcessor(appContext)
     private val gallerySaver = GallerySaver(appContext)
 
