@@ -183,7 +183,16 @@ export default function CalendarPage() {
           >
             All Athletes
           </button>
-          {athletes.map(a => (
+          {user && (
+            <button
+              onClick={() => setFilterAthlete(String(user.id))}
+              className={`w-full text-left px-3 py-2 rounded text-sm mb-1 transition-colors flex items-center gap-2 ${filterAthlete === String(user.id) ? 'bg-gray-100' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: getAthleteColor(user.id) }} />
+              <span className="truncate">Ja ({user.username})</span>
+            </button>
+          )}
+          {athletes.filter(a => a.id !== user?.id).map(a => (
             <button
               key={a.id}
               onClick={() => setFilterAthlete(String(a.id))}
