@@ -138,6 +138,7 @@ fun VbtNavGraph(
                         onNavigateToAthletes = { navController.navigate(Routes.ATHLETE_LIST) },
                         onNavigateToSchedule = { navController.navigate(Routes.SCHEDULE) },
                         onNavigateToAnalytics = { navController.navigate(Routes.ANALYTICS) },
+                        onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                         onLogout = {
                             navController.navigate(Routes.LOGIN) {
                                 popUpTo(0) { inclusive = true }
