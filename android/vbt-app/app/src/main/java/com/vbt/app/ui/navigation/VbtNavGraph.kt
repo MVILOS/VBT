@@ -222,7 +222,14 @@ fun VbtNavGraph(
                 navArgument("athlete") { type = NavType.StringType; defaultValue = "" }
             )
         ) {
-            RecordingScreen(onNavigateBack = { navController.popBackStack() })
+            RecordingScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
+            )
+        }
+
+        composable(Routes.SETTINGS) {
+            SettingsScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(
