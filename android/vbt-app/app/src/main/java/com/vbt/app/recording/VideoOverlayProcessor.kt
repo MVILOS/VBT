@@ -67,17 +67,21 @@ class VideoOverlayProcessor(private val context: Context) {
 
         transformer.start(editedItem, outputFile.absolutePath)
 
-        // Odpytywanie postępu; getProgress musi być wołane na tym samym wątku co start.
-        val progressHolder = ProgressHolder()
-        while (true) {
-            val state = transformer.getProgress(progressHolder)
-            if (state == Transformer.PROGRESS_STATE_AVAILABLE) {
-                trySend(progressHolder.progress / 100f)
+        // Odpytywanie postępu w osobnej korutynie; getProgress musi być wołane na tym
+        // samym wątku co start (callbackFlow producent działa tu na Main - patrz VM).
+        val poller = launch {
+            val progressHolder = ProgressHolder()
+            while (true) {
+                if (transformer.getProgress(progressHolder) == Transformer.PROGRESS_STATE_AVAILABLE) {
+                    trySend(progressHolder.progress / 100f)
+                }
+                delay(200)
             }
-            if (state == Transformer.PROGRESS_STATE_NOT_STARTED) break
-            delay(200)
         }
 
-        awaitClose { transformer.cancel() }
+        awaitClose {
+            poller.cancel()
+            transformer.cancel()
+        }
     }
 }
