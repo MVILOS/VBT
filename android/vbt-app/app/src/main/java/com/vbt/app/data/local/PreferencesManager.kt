@@ -24,6 +24,8 @@ class PreferencesManager @Inject constructor(@ApplicationContext private val con
         private val USERNAME = stringPreferencesKey("username")
         private val USER_ROLE = stringPreferencesKey("user_role")
         private val COACH_ID = intPreferencesKey("coach_id")
+        // Zbiór kluczy metryk pokazywanych na nakładce nagrywania (patrz OverlayMetric)
+        private val OVERLAY_METRICS = stringSetPreferencesKey("overlay_metrics")
     }
 
     private val dataStore = context.dataStore
