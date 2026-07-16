@@ -177,7 +177,7 @@ private fun LiveOverlay(state: RecordingUiState, modifier: Modifier = Modifier) 
     ) {
         Column {
             Text(
-                String.format("%.2f", bigVel),
+                String.format("%.2f", state.liveVelocity),
                 color = zone.color,
                 fontSize = 44.sp,
                 fontWeight = FontWeight.Bold
