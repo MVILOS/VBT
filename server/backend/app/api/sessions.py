@@ -239,10 +239,12 @@ def update_rep(
 
     if data.load_kg is not None:
         rep.load_kg = data.load_kg
-        # Moc zależy od ciężaru (P = m*g*v_mean) - po korekcie kg musi zostać
-        # przeliczona, inaczej w analityce zostałaby moc ze starego ciężaru.
-        if rep.mean_velocity:
-            rep.power_watts = rep.load_kg * 9.81 * rep.mean_velocity
+        # Moc zależy od ciężaru (P = m*g*v_peak; konwencja od 16.07.2026) - po
+        # korekcie kg musi zostać przeliczona, inaczej w analityce zostałaby
+        # moc ze starego ciężaru. Fallback na mean dla rekordów sprzed peak.
+        velocity_for_power = rep.peak_velocity or rep.mean_velocity
+        if velocity_for_power:
+            rep.power_watts = rep.load_kg * 9.81 * velocity_for_power
     if data.set_number is not None:
         rep.set_number = data.set_number
     if data.rep_number is not None:
