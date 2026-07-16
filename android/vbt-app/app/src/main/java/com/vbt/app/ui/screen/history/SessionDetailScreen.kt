@@ -351,7 +351,8 @@ private fun RepByRepSection(
     reps: List<RepResultDto>,
     onEditSetWeight: (Int) -> Unit,
     onDeleteRep: (RepResultDto) -> Unit,
-    onMergeSet: (Int) -> Unit
+    onMergeSet: (Int) -> Unit,
+    onSplitRep: (RepResultDto) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
