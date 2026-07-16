@@ -34,6 +34,7 @@ export default function Dashboard() {
   const [selectedExercise, setSelectedExercise] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [detailSessionId, setDetailSessionId] = useState<number | null>(null)
 
   useEffect(() => {
     loadBase()
