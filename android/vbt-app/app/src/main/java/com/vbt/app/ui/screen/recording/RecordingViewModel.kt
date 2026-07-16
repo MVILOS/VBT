@@ -124,6 +124,11 @@ class RecordingViewModel @Inject constructor(
                 _uiState.update { it.copy(heartRate = hr) }
             }
         }
+        viewModelScope.launch {
+            preferencesManager.getOverlayMetricKeys().collect { keys ->
+                _uiState.update { it.copy(selectedMetrics = OverlayMetric.fromKeysOrDefault(keys)) }
+            }
+        }
     }
 
     fun startRecording() {
