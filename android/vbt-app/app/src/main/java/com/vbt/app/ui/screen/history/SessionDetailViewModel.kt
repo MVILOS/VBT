@@ -126,6 +126,46 @@ class SessionDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Rozdziela serię: powtórzenia [setNumber] od [fromRepNumber] w górę
+     * przechodzą do nowej serii (kolejny wolny numer) z ciężarem [newLoadKg]
+     * i numeracją od 1. Odwrotność mergeSetWithPrevious - np. gdy urządzenie
+     * skleiło dwie fizyczne serie, bo zmieniono obciążenie bez naciśnięcia
+     * "kolejna seria" (sesja 105: powt. 5-6 "serii 6" to była seria na 150 kg).
+     * 1RM przeliczane z nowego ciężaru; moc przelicza serwer (m*g*v_peak).
+     */
+    fun splitSetFromRep(setNumber: Int, fromRepNumber: Int, newLoadKg: Double) {
+        val reps = _uiState.value.session?.reps ?: return
+        val repsToMove = reps.filter { it.setNumber == setNumber && it.repNumber >= fromRepNumber }
+            .sortedBy { it.repNumber }
+        if (repsToMove.isEmpty()) return
+        val newSetNumber = (reps.maxOfOrNull { it.setNumber } ?: setNumber) + 1
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSaving = true)
+            try {
+                repsToMove.forEachIndexed { index, rep ->
+                    val repId = rep.id ?: return@forEachIndexed
+                    apiService.updateRep(
+                        sessionId,
+                        repId,
+                        UpdateRepRequest(
+                            setNumber = newSetNumber,
+                            repNumber = index + 1,
+                            loadKg = newLoadKg,
+                            estimated1rm = estimate1RM.estimateFromVelocity(
+                                newLoadKg.toFloat(), rep.meanVelocity.toFloat()
+                            )
+                        )
+                    )
+                }
+                refreshAfterEdit()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isSaving = false, error = "Błąd rozdzielania serii: ${e.message}")
+            }
+        }
+    }
+
     private suspend fun refreshAfterEdit() {
         val response = apiService.getSession(sessionId)
         if (response.isSuccessful && response.body() != null) {
