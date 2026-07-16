@@ -20,12 +20,20 @@ def list_calendar_entries(
 ):
     if current_user.role == "coach":
         if athlete_id:
+            # Trener widzi kalendarz tylko własny lub swoich zawodników
+            # (relacja many-to-many athlete_coaches - zawodnik może mieć
+            # kilku trenerów i każdy z nich ma tu dostęp).
+            if athlete_id != current_user.id and not db.query(AthleteCoach).filter_by(
+                coach_id=current_user.id, athlete_id=athlete_id
+            ).first():
+                raise HTTPException(status_code=403, detail="Athlete not under your supervision")
             q = db.query(CalendarEntry).filter(CalendarEntry.athlete_id == athlete_id)
         else:
             # Return entries for all athletes under this coach + coach's own
-            from app.models import User as UserModel
             athlete_ids = [
-                a.id for a in db.query(UserModel).filter(UserModel.coach_id == current_user.id).all()
+                ac.athlete_id for ac in db.query(AthleteCoach).filter(
+                    AthleteCoach.coach_id == current_user.id
+                ).all()
             ]
             athlete_ids.append(current_user.id)
             q = db.query(CalendarEntry).filter(CalendarEntry.athlete_id.in_(athlete_ids))
