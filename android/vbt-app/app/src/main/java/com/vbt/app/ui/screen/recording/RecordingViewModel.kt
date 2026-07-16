@@ -148,11 +148,12 @@ class RecordingViewModel @Inject constructor(
 
     fun startRecording() {
         if (_uiState.value.isRecording) return
+        val activeRecorder = _recorder.value ?: return
         val output = File(appContext.cacheDir, "vbt_raw_${System.currentTimeMillis()}.mp4")
         rawFile = output
         resetTimeline()
 
-        recorder.start(
+        activeRecorder.start(
             outputFile = output,
             onStarted = {
                 recordStartElapsedMs = SystemClock.elapsedRealtime()
