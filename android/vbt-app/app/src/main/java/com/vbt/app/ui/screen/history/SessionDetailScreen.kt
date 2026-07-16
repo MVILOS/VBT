@@ -141,11 +141,24 @@ private fun SessionDetailContent(
     onEditSetWeight: (Int, Double) -> Unit,
     onDeleteRep: (Int) -> Unit,
     onMergeSet: (Int) -> Unit,
+    onSplitSet: (Int, Int, Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var setPendingWeightEdit by remember { mutableStateOf<Int?>(null) }
     var repPendingDelete by remember { mutableStateOf<RepResultDto?>(null) }
     var setPendingMerge by remember { mutableStateOf<Int?>(null) }
+    var repPendingSplit by remember { mutableStateOf<RepResultDto?>(null) }
+
+    repPendingSplit?.let { rep ->
+        SplitSetDialog(
+            rep = rep,
+            onConfirm = { newLoad ->
+                onSplitSet(rep.setNumber, rep.repNumber, newLoad)
+                repPendingSplit = null
+            },
+            onDismiss = { repPendingSplit = null }
+        )
+    }
 
     setPendingWeightEdit?.let { setNumber ->
         val currentLoad = session.reps?.firstOrNull { it.setNumber == setNumber }?.loadKg ?: 0.0
