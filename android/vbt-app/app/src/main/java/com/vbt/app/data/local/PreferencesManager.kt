@@ -81,6 +81,27 @@ class PreferencesManager @Inject constructor(@ApplicationContext private val con
         }
     }
 
+    // Atomowe przełączenie jednej metryki - odczyt i zapis w jednej transakcji
+    // dataStore.edit, żeby szybkie przełączanie kilku suwaków nie gubiło zmian
+    // (read-modify-write na asynchronicznym Flow potrafił zgubić np. Vmax).
+    // [defaultKeys] używane, gdy zbiór nie był jeszcze zapisany.
+    suspend fun toggleOverlayMetric(key: String, defaultKeys: Set<String>) {
+        dataStore.edit { preferences ->
+            val current = preferences[OVERLAY_METRICS] ?: defaultKeys
+            preferences[OVERLAY_METRICS] = if (key in current) current - key else current + key
+        }
+    }
+
+    fun getRecordingQualityKey(): Flow<String?> = dataStore.data.map { preferences ->
+        preferences[RECORDING_QUALITY]
+    }
+
+    suspend fun setRecordingQualityKey(key: String) {
+        dataStore.edit { preferences ->
+            preferences[RECORDING_QUALITY] = key
+        }
+    }
+
     suspend fun clear() {
         dataStore.edit { preferences ->
             preferences.clear()
