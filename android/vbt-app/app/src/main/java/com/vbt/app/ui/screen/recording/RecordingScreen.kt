@@ -164,7 +164,6 @@ private fun TopInfo(state: RecordingUiState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun LiveOverlay(state: RecordingUiState, modifier: Modifier = Modifier) {
-    val bigVel = if (state.repCount > 0) state.liveVelocity else state.liveVelocity
     val zone = VelocityZone.fromVelocity(state.liveVelocity)
     Row(
         modifier = modifier
