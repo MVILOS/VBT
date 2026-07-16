@@ -42,6 +42,7 @@ import com.vbt.app.ui.theme.VbtTeal
 @Composable
 fun WorkoutScreen(
     onNavigateBack: () -> Unit,
+    onRecordSet: (exerciseName: String, loadKg: Float, athleteName: String?) -> Unit = { _, _, _ -> },
     viewModel: WorkoutViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()

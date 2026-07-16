@@ -481,3 +481,11 @@ fun VbtBottomNavBar(navController: NavController, role: String?) {
         }
     }
 }
+
+// Nawigacja do ekranu nagrywania z bieżącym kontekstem serii. Nazwy (ćwiczenie,
+// zawodnik) kodujemy dla URL, bo trafiają do argumentów trasy jako stringi.
+private fun NavController.navigateToRecord(exerciseName: String, loadKg: Float, athleteName: String?) {
+    val ex = Uri.encode(exerciseName)
+    val athlete = Uri.encode(athleteName ?: "")
+    navigate("record?exercise=$ex&load=$loadKg&athlete=$athlete") { launchSingleTop = true }
+}
