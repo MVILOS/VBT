@@ -70,7 +70,8 @@ class RecordingViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val bleManager: VbtBleManager,
     private val heartRateManager: HeartRateManager,
-    private val calculatePower: CalculatePowerUseCase
+    private val calculatePower: CalculatePowerUseCase,
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     companion object {
