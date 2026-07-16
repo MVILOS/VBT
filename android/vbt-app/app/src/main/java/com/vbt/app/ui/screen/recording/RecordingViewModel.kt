@@ -175,7 +175,7 @@ class RecordingViewModel @Inject constructor(
 
     fun stopRecording() {
         if (!_uiState.value.isRecording) return
-        recorder.stop()
+        _recorder.value?.stop()
     }
 
     // ---- Zbieranie zdarzeń do osi czasu ----
