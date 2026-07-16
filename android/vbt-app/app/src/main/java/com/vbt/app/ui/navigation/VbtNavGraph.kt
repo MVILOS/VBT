@@ -236,7 +236,8 @@ fun VbtNavGraph(
                 userRole = userRole,
                 content = {
                     WorkoutScreen(
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onRecordSet = { ex, load, athlete -> navController.navigateToRecord(ex, load, athlete) }
                     )
                 }
             )
@@ -286,7 +287,8 @@ fun VbtNavGraph(
                 userRole = userRole,
                 content = {
                     WorkoutScreen(
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onRecordSet = { ex, load, athlete -> navController.navigateToRecord(ex, load, athlete) }
                     )
                 }
             )
