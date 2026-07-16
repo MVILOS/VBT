@@ -1,21 +1,24 @@
 #include <Arduino.h>
 #include "quad_encoder.h"
-#include "spool_model.h"
 #include "lift_detector.h"
 #include "data_storage.h"
 #include "ble_server.h"
 
 // --- KONFIGURACJA SPRZĘTU (ESP32-C3 SuperMini) ---
-// Rolka nawija linkę warstwa na warstwę, więc jej promień rośnie w trakcie
-// użycia (nawijające się na siebie zwoje) - stała średnica fałszowałaby
-// pomiar dystansu/prędkości w miarę odwijania linki w obrębie powtórzenia.
-// Zamiast stałej, LiftDetector używa dynamicznego modelu (SpoolModel,
-// zob. spool_model.h) opartego o fizyczne wymiary rolki zmierzone na
-// urządzeniu:
-const float CORE_DIAMETER_M = 0.042;      // średnica pustego rdzenia rolki
-const float CORD_THICKNESS_M = 0.001;     // grubość linki
-const float MAX_SPOOL_DIAMETER_M = 0.0445; // najwyższy zmierzony szczyt (pełne nawinięcie)
-const float ENCODER_PPR = 1200.0;
+// Linka nawija się pojedynczą warstwą wzdłuż szerokiego bębna, więc promień
+// nawijania jest w praktyce stały. Poprzedni model warstwowy (SpoolModel)
+// mieścił geometrycznie tylko ~0.17 m linki, po czym clampował się do
+// promienia rdzenia - realnie i tak liczył stałą średnicę, tyle że błędną
+// (42 mm). Zmierzona na urządzeniu średnica bębna z linką: 41 mm.
+const float SPOOL_DIAMETER_M = 0.041;
+// Enkoder: 600 PPR na kanał, dekoder pełnej kwadratury (quad_encoder.h)
+// daje 4 zliczenia na impuls -> 2400 zliczeń na obrót. Poprzednia wartość
+// 1200 pochodziła z firmware v1 (gdzie maskowała ją empiryczna kalibracja
+// SPOOL_DIAMETER_M=0.0074) i zawyżała prędkość/dystans 2x - zweryfikowane
+// analizą wideo przysiadu 140 kg (sesja 105, 15.07.2026) vs dane na
+// serwerze. Test kontrolny po każdej zmianie: wyciągnięcie dokładnie
+// 1.00 m linki (wolno i szybko) musi logować dystans ~1.00 m.
+const float COUNTS_PER_REV = 2400.0;
 
 // UWAGA: piny przeniesione z klasycznego ESP32 (25/26, LED=2) na ESP32-C3,
 // który ma tylko GPIO 0-21. Kanały A/B enkodera wg zgłoszenia: GPIO 5 i 6
