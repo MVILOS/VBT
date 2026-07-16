@@ -52,6 +52,16 @@ fun RecordingScreen(
         onDispose { view.keepScreenOn = false }
     }
 
+    // Do zapisu w galerii na Androidzie <10 (API 29) potrzebny jest jeszcze
+    // WRITE_EXTERNAL_STORAGE; od API 29 MediaStore go nie wymaga.
+    val requiredPermissions = remember {
+        buildList {
+            add(Manifest.permission.CAMERA)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }.toTypedArray()
+    }
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
@@ -59,11 +69,11 @@ fun RecordingScreen(
         )
     }
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted -> hasCameraPermission = granted }
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result -> hasCameraPermission = result[Manifest.permission.CAMERA] == true }
 
     LaunchedEffect(Unit) {
-        if (!hasCameraPermission) permissionLauncher.launch(Manifest.permission.CAMERA)
+        if (!hasCameraPermission) permissionLauncher.launch(requiredPermissions)
     }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
