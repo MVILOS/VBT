@@ -593,7 +593,7 @@ class WorkoutViewModel @Inject constructor(
                         powerWatts = power.toDouble(),
                         estimated1rm = estimate1RM.estimate(state.currentLoadKg, rep.meanVelocityMs, repNumber),
                         timestamp = null
-                    ))
+                    ), deviceTimestamp = rep.deviceTimestamp)
                     queuedRepNumbersInSet.add(repNumber)
                 }
             }
