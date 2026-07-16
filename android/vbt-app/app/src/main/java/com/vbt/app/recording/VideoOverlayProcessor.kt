@@ -38,10 +38,11 @@ class VideoOverlayProcessor(private val context: Context) {
         inputFile: File,
         outputFile: File,
         timeline: OverlayTimeline,
+        metrics: List<OverlayMetric>,
         frameWidth: Int,
         frameHeight: Int
     ): Flow<Float> = callbackFlow {
-        val overlay = MetricsOverlay(timeline, OverlayRenderer(), frameWidth, frameHeight)
+        val overlay = MetricsOverlay(timeline, OverlayRenderer(), metrics, frameWidth, frameHeight)
         val overlayEffect = OverlayEffect(ImmutableList.of(overlay))
         val effects = Effects(/* audioProcessors = */ emptyList(), /* videoEffects = */ listOf(overlayEffect))
 
