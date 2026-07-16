@@ -42,6 +42,7 @@ fun HomeScreen(
     onNavigateToAthletes: () -> Unit,
     onNavigateToSchedule: () -> Unit,
     onNavigateToAnalytics: () -> Unit,
+    onNavigateToSettings: () -> Unit = {},
     onLogout: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
