@@ -552,7 +552,22 @@ private fun RepTableRow(
             modifier = Modifier.weight(0.7f),
             textAlign = TextAlign.Center
         )
-        Box(modifier = Modifier.weight(0.5f), contentAlignment = Alignment.Center) {
+        Row(
+            modifier = Modifier.weight(0.9f),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (onSplit != null) {
+                IconButton(onClick = onSplit, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.CallSplit,
+                        contentDescription = "Rozdziel do nowej serii od tego powtórzenia",
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.size(24.dp))
+            }
             IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
                 Icon(
                     Icons.Default.Delete,
