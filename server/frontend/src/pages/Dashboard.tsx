@@ -247,6 +247,14 @@ export default function Dashboard() {
           </table>
         </div>
       </div>
+
+      {detailSessionId != null && (
+        <SessionDetailModal
+          sessionId={detailSessionId}
+          onClose={() => setDetailSessionId(null)}
+          onChanged={loadBase}
+        />
+      )}
     </div>
   )
 }
