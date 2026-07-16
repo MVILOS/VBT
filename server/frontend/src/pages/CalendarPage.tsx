@@ -17,6 +17,7 @@ const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> 
 }
 
 export default function CalendarPage() {
+  const { user } = useAuth()
   const [entries, setEntries] = useState<CalendarEntry[]>([])
   const [athletes, setAthletes] = useState<User[]>([])
   const [plans, setPlans] = useState<TrainingPlan[]>([])
