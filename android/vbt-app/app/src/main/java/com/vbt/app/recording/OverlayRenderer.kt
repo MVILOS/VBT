@@ -14,11 +14,12 @@ import kotlin.math.min
 
 /**
  * Rysuje przezroczystą nakładkę z parametrami VBT na Bitmapie o wymiarach klatki
- * wideo. To jedyne źródło wyglądu wypalanej grafiki - używa go i podgląd (pośrednio,
- * przez ten sam układ w Compose), i [MetricsOverlay] podczas eksportu przez Media3.
+ * wideo. To jedyne źródło wyglądu wypalanej grafiki - używa go [MetricsOverlay]
+ * podczas eksportu przez Media3.
  *
- * Wszystkie rozmiary skalują się względem krótszego boku klatki ([scale]), więc
- * nakładka wygląda tak samo niezależnie od rozdzielczości nagrania (HD/FHD, pion/poziom).
+ * Zestaw pokazywanych metryk ([metrics]) jest konfigurowalny w Ustawieniach.
+ * Wszystkie rozmiary skalują się względem krótszego boku klatki, więc nakładka
+ * wygląda tak samo niezależnie od rozdzielczości (HD/FHD, pion/poziom).
  */
 class OverlayRenderer {
 
@@ -34,11 +35,12 @@ class OverlayRenderer {
 
     private val teal = VbtTeal.toArgb()
 
-    /**
-     * Renderuje nakładkę dla [snapshot] na nowej Bitmapie [width] x [height].
-     * Bitmapa jest w pełni przezroczysta poza narysowanymi elementami.
-     */
-    fun render(snapshot: OverlaySnapshot?, width: Int, height: Int): Bitmap {
+    fun render(
+        snapshot: OverlaySnapshot?,
+        metrics: List<OverlayMetric>,
+        width: Int,
+        height: Int
+    ): Bitmap {
         val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         if (snapshot == null) return bmp
@@ -46,11 +48,9 @@ class OverlayRenderer {
         val scale = min(width, height) / 1080f
         val pad = 40f * scale
 
-        // ---- Górny pasek: ćwiczenie • ciężar • zawodnik ----
-        labelPaint.textSize = 34f * scale
+        // ---- Górny pasek: ćwiczenie • ciężar ----
         textPaint.textSize = 40f * scale
         textPaint.color = Color.WHITE
-
         val header = buildString {
             append(snapshot.exerciseName)
             if (snapshot.loadKg > 0f) append("  •  ${fmtKg(snapshot.loadKg)} kg")
@@ -70,7 +70,7 @@ class OverlayRenderer {
             drawPill(canvas, width - pad - w - 48f * scale, pad, hrText, textPaint, scale)
         }
 
-        // ---- Dolny panel z metrykami ----
+        // ---- Dolny panel ----
         val zoneColor = snapshot.zone.color.toArgb()
         val panelH = 300f * scale
         val panelTop = height - panelH - pad
@@ -90,33 +90,42 @@ class OverlayRenderer {
             8f * scale, 8f * scale, accentPaint
         )
 
-        val col1 = pad + 48f * scale
-        // Duża prędkość ostatniego powtórzenia (albo live, gdy brak powtórzeń)
-        val bigVel = if (snapshot.lastRepMeanVelocityMs > 0f) snapshot.lastRepMeanVelocityMs
-        else snapshot.liveVelocityMs
-        textPaint.color = zoneColor
-        textPaint.textSize = 150f * scale
-        canvas.drawText(fmt2(bigVel), col1, panelTop + 180f * scale, textPaint)
-        labelPaint.color = 0xFFAAAAAA.toInt()
-        labelPaint.textSize = 40f * scale
-        val velW = textPaint.measureText(fmt2(bigVel))
-        canvas.drawText("m/s", col1 + velW + 16f * scale, panelTop + 180f * scale, labelPaint)
-
-        // Etykieta strefy pod prędkością
-        labelPaint.color = zoneColor
-        labelPaint.textSize = 42f * scale
-        canvas.drawText(snapshot.zone.label.uppercase(), col1, panelTop + 250f * scale, labelPaint)
-
-        // Prawa kolumna: licznik powtórzeń, moc, peak
-        val colR = width - pad - 340f * scale
+        // Licznik powtórzeń + strefa (zawsze widoczne, u góry panelu)
+        val innerLeft = pad + 48f * scale
         textPaint.color = teal
-        textPaint.textSize = 96f * scale
-        canvas.drawText("REP ${snapshot.repCount}", colR, panelTop + 110f * scale, textPaint)
+        textPaint.textSize = 60f * scale
+        canvas.drawText("REP ${snapshot.repCount}", innerLeft, panelTop + 66f * scale, textPaint)
+        labelPaint.color = zoneColor
+        labelPaint.textSize = 40f * scale
+        val repW = textPaint.measureText("REP ${snapshot.repCount}")
+        canvas.drawText(snapshot.zone.label.uppercase(), innerLeft + repW + 30f * scale, panelTop + 60f * scale, labelPaint)
 
-        labelPaint.color = Color.WHITE
-        labelPaint.textSize = 46f * scale
-        canvas.drawText("Moc: ${snapshot.lastRepPowerW.toInt()} W", colR, panelTop + 180f * scale, labelPaint)
-        canvas.drawText("Peak: ${fmt2(snapshot.lastRepPeakVelocityMs)} m/s", colR, panelTop + 240f * scale, labelPaint)
+        // Kafelki wybranych metryk (równo rozłożone w szerokości panelu)
+        if (metrics.isNotEmpty()) {
+            val tilesLeft = innerLeft
+            val tilesRight = width - pad - 30f * scale
+            val tileW = (tilesRight - tilesLeft) / metrics.size
+            val valueSize = (min(120f, 150f / metrics.size + 60f)) * scale
+            val valueY = panelTop + 190f * scale
+            val labelY = panelTop + 250f * scale
+
+            metrics.forEachIndexed { i, metric ->
+                val cx = tilesLeft + tileW * i + tileW / 2f
+                val value = metric.format(metric.value(snapshot))
+                textPaint.color = if (metric.isVelocity) zoneColor else teal
+                textPaint.textSize = valueSize
+                textPaint.textAlign = Paint.Align.CENTER
+                canvas.drawText(value, cx, valueY, textPaint)
+
+                labelPaint.color = 0xFFAAAAAA.toInt()
+                labelPaint.textSize = 34f * scale
+                labelPaint.textAlign = Paint.Align.CENTER
+                val label = if (metric.unit.isEmpty()) metric.label else "${metric.label} (${metric.unit})"
+                canvas.drawText(label, cx, labelY, labelPaint)
+            }
+            textPaint.textAlign = Paint.Align.LEFT
+            labelPaint.textAlign = Paint.Align.LEFT
+        }
 
         return bmp
     }
@@ -134,7 +143,6 @@ class OverlayRenderer {
         canvas.drawText(text, x + padX, y + padY + h * 0.85f, paint)
     }
 
-    private fun fmt2(v: Float): String = String.format("%.2f", v)
     private fun fmtKg(v: Float): String =
         if (v % 1f == 0f) v.toInt().toString() else String.format("%.1f", v)
 }
