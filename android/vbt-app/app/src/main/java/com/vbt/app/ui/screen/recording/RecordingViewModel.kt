@@ -230,13 +230,14 @@ class RecordingViewModel @Inject constructor(
     private fun processRecording(raw: File) {
         val (w, h) = readFrameSize(raw)
         val timeline = OverlayTimeline(snapshots.toList())
+        val metrics = _uiState.value.selectedMetrics
         val output = File(appContext.cacheDir, "vbt_overlay_${System.currentTimeMillis()}.mp4")
 
         _uiState.update { it.copy(phase = RecordingPhase.Processing(0f)) }
 
         viewModelScope.launch {
             try {
-                processor.process(raw, output, timeline, w, h).collectLatest { progress ->
+                processor.process(raw, output, timeline, metrics, w, h).collectLatest { progress ->
                     _uiState.update { it.copy(phase = RecordingPhase.Processing(progress)) }
                 }
                 val displayName = "VBT_${_uiState.value.exerciseName.replace(Regex("[^A-Za-z0-9]"), "_")}_${System.currentTimeMillis()}.mp4"
