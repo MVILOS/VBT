@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { addDays, format, startOfWeek, isSameDay } from 'date-fns'
 import client from '../api/client'
+import { useAuth } from '../context/AuthContext'
 import { CalendarEntry, User, TrainingPlan, SetOverride } from '../types'
 
 const ATHLETE_COLORS = ['#7c3aed','#06b6d4','#ec4899','#f59e0b','#10b981','#6366f1','#f97316','#84cc16']
