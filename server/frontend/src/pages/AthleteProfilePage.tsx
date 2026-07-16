@@ -42,6 +42,9 @@ export default function AthleteProfilePage() {
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState('')
 
+  // Session detail / edit modal
+  const [detailSessionId, setDetailSessionId] = useState<number | null>(null)
+
   useEffect(() => {
     loadAll()
   }, [athleteId])
