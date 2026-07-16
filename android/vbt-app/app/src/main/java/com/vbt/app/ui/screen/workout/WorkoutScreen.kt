@@ -121,6 +121,18 @@ fun WorkoutScreen(
                         }
                     },
                     actions = {
+                        // Nagraj podejście z wypalonymi parametrami (OVR-style)
+                        if (state.mode == WorkoutMode.ACTIVE) {
+                            IconButton(onClick = {
+                                onRecordSet(
+                                    state.currentExerciseName,
+                                    state.currentLoadKg,
+                                    state.sessionAthleteName
+                                )
+                            }) {
+                                Icon(Icons.Default.Videocam, contentDescription = "Nagraj podejście", tint = VbtTeal)
+                            }
+                        }
                         Box(
                             modifier = Modifier
                                 .size(12.dp)
