@@ -18,6 +18,7 @@ import com.vbt.app.recording.GallerySaver
 import com.vbt.app.recording.OverlayMetric
 import com.vbt.app.recording.OverlaySnapshot
 import com.vbt.app.recording.OverlayTimeline
+import com.vbt.app.recording.RecordingQuality
 import com.vbt.app.recording.SetRecorder
 import com.vbt.app.recording.VideoOverlayProcessor
 import dagger.hilt.android.lifecycle.HiltViewModel
