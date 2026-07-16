@@ -67,6 +67,18 @@ class PreferencesManager @Inject constructor(@ApplicationContext private val con
         preferences[AUTH_TOKEN] != null
     }
 
+    // Wybór metryk nakładki nagrywania. null = nigdy nie ustawiono (konsument
+    // stosuje wtedy domyślny zestaw - patrz OverlayMetric.fromKeysOrDefault).
+    fun getOverlayMetricKeys(): Flow<Set<String>?> = dataStore.data.map { preferences ->
+        preferences[OVERLAY_METRICS]
+    }
+
+    suspend fun setOverlayMetricKeys(keys: Set<String>) {
+        dataStore.edit { preferences ->
+            preferences[OVERLAY_METRICS] = keys
+        }
+    }
+
     suspend fun clear() {
         dataStore.edit { preferences ->
             preferences.clear()
