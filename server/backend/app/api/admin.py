@@ -102,6 +102,12 @@ def update_user(
         user.role = body.role
     if body.coach_id is not None:
         user.coach_id = body.coach_id
+        # Dopisz relację M2M (bez usuwania istniejących - zawodnik może mieć
+        # wielu trenerów), bo kontrole uprawnień idą po athlete_coaches.
+        if body.coach_id and not db.query(AthleteCoach).filter_by(
+            athlete_id=user.id, coach_id=body.coach_id
+        ).first():
+            db.add(AthleteCoach(athlete_id=user.id, coach_id=body.coach_id))
     if body.is_active is not None:
         user.is_active = body.is_active
     db.commit()
