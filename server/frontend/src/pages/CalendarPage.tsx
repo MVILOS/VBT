@@ -279,7 +279,8 @@ export default function CalendarPage() {
                   <select value={formData.athlete_id} onChange={e => setFormData({...formData, athlete_id: e.target.value})}
                     className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded text-gray-900 text-sm" required>
                     <option value="">Wybierz zawodnika</option>
-                    {athletes.map(a => <option key={a.id} value={a.id}>{a.username}</option>)}
+                    {user && <option value={user.id}>Ja ({user.username})</option>}
+                    {athletes.filter(a => a.id !== user?.id).map(a => <option key={a.id} value={a.id}>{a.username}</option>)}
                   </select>
                 </div>
                 <div>
