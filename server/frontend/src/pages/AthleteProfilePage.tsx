@@ -6,6 +6,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import client from '../api/client'
 import { User, CalendarEntry, TrainingPlan, WorkoutSession } from '../types'
+import SessionDetailModal from '../components/SessionDetailModal'
 
 type Tab = 'calendar' | 'plans' | 'sessions'
 
