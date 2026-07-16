@@ -29,6 +29,11 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
 
+    <!-- Zapis gotowego nagrania do galerii; od Androida 10 (API 29) MediaStore
+         nie wymaga tego uprawnienia (RELATIVE_PATH + IS_PENDING) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
     <application
         android:name=".VbtApplication"
         android:allowBackup="true"
