@@ -25,6 +25,10 @@
 
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
 
+    <!-- Kamera do nagrywania podejścia z wypalonymi parametrami (bez audio) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
+
     <application
         android:name=".VbtApplication"
         android:allowBackup="true"
