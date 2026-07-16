@@ -37,9 +37,8 @@ void LiftDetector::update(unsigned long currentMicros) {
 
     int64_t currentPositionRaw = encoder->getCount();
     float deltaSteps = (float)(currentPositionRaw - lastPosition);
-    // Konwersja kroków na dystans przez dynamiczny model rolki (zmienny
-    // promień w miarę odwijania/nawijania linki) - patrz spool_model.h
-    float distanceDelta = spoolModel.stepsToDistance(deltaSteps, RAD_PER_STEP);
+    // Stały promień nawijania (linka w jednej warstwie na szerokim bębnie)
+    float distanceDelta = deltaSteps * METERS_PER_COUNT;
     float rawVelocityMs = distanceDelta / dt_s;
     cumulativeDistance += distanceDelta;
 
