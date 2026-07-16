@@ -256,7 +256,7 @@ export default function CalendarPage() {
                         className="cursor-pointer rounded p-1.5 border-l-2 bg-gray-100 hover:bg-gray-100 transition-colors"
                         style={{ borderLeftColor: color }}>
                         <div className="text-xs font-semibold text-gray-800 truncate">{entry.title}</div>
-                        {athlete && <div className="text-xs truncate mt-0.5" style={{ color }}>{athlete.username}</div>}
+                        {athleteName && <div className="text-xs truncate mt-0.5" style={{ color }}>{athleteName}</div>}
                         {entry.time_slot && <div className="text-xs text-gray-500 mt-0.5">{entry.time_slot}</div>}
                         <div className="flex items-center gap-1 mt-1">
                           <span className={`text-xs px-1 py-0.5 rounded ${status.bg} ${status.text}`}>{status.label}</span>
