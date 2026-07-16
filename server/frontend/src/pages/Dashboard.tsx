@@ -230,7 +230,8 @@ export default function Dashboard() {
                 <tr><td colSpan={isCoach ? 4 : 3} className="py-4 px-4 text-center text-gray-500">No sessions yet</td></tr>
               ) : (
                 sessions.map(s => (
-                  <tr key={s.id} className="border-b border-gray-200 hover:bg-gray-100">
+                  <tr key={s.id} onClick={() => setDetailSessionId(s.id)}
+                    className="border-b border-gray-200 hover:bg-gray-100 cursor-pointer">
                     {isCoach && <td className="py-3 px-4 text-gray-800">{s.athlete_name}</td>}
                     <td className="py-3 px-4 text-gray-500">
                       {formatDistanceToNow(new Date(s.started_at), { addSuffix: true })}
