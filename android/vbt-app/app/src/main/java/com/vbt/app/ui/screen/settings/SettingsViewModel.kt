@@ -23,11 +23,24 @@ class SettingsViewModel @Inject constructor(
             .map { OverlayMetric.fromKeysOrDefault(it).toSet() }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), OverlayMetric.DEFAULT)
 
+    val recordingQuality: StateFlow<RecordingQuality> =
+        preferencesManager.getRecordingQualityKey()
+            .map { RecordingQuality.fromKey(it) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RecordingQuality.DEFAULT)
+
     fun toggleMetric(metric: OverlayMetric) {
         viewModelScope.launch {
-            val current = selectedMetrics.value
-            val updated = if (metric in current) current - metric else current + metric
-            preferencesManager.setOverlayMetricKeys(updated.map { it.key }.toSet())
+            // Atomowe przełączenie w DataStore - bez wyścigu read-modify-write.
+            preferencesManager.toggleOverlayMetric(
+                key = metric.key,
+                defaultKeys = OverlayMetric.DEFAULT.map { it.key }.toSet()
+            )
+        }
+    }
+
+    fun setQuality(quality: RecordingQuality) {
+        viewModelScope.launch {
+            preferencesManager.setRecordingQualityKey(quality.key)
         }
     }
 }
