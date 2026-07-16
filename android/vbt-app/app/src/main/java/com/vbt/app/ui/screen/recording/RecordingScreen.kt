@@ -123,7 +123,7 @@ fun RecordingScreen(
                 is RecordingPhase.Processing -> ProcessingCard(phase.progress)
                 is RecordingPhase.Saved -> SavedCard(onDone = onNavigateBack, onAgain = viewModel::resetAfterSave)
                 is RecordingPhase.Error -> ErrorCard(phase.message, onDismiss = viewModel::resetAfterSave)
-                else -> if (hasCameraPermission) {
+                else -> if (hasCameraPermission && recorder != null) {
                     RecordButton(
                         isRecording = state.isRecording,
                         onClick = { if (state.isRecording) viewModel.stopRecording() else viewModel.startRecording() }
