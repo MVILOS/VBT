@@ -36,6 +36,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.UnstableApi
 import com.vbt.app.data.ble.BleConnectionState
 import com.vbt.app.domain.model.VelocityZone
+import com.vbt.app.recording.OverlaySnapshot
+import com.vbt.app.ui.theme.VbtTeal
 
 @UnstableApi
 @Composable
