@@ -645,14 +645,14 @@ class WorkoutViewModel @Inject constructor(
                 if (currentSetId > 0) {
                     workoutRepository.getRepsForSetOnce(currentSetId).forEach { rep ->
                         workoutRepository.updateRep(
-                            rep.copy(powerW = calculatePower.calculateMeanPower(newKg, rep.maxVelocityMs))
+                            rep.copy(powerW = calculatePower.calculatePeakPower(newKg, effectivePeak(rep)))
                         )
                     }
                 }
                 _uiState.update { state ->
                     val recalc = { rep: RepResultEntity ->
                         if (rep.sessionSetId == currentSetId)
-                            rep.copy(powerW = calculatePower.calculateMeanPower(newKg, rep.maxVelocityMs))
+                            rep.copy(powerW = calculatePower.calculatePeakPower(newKg, effectivePeak(rep)))
                         else rep
                     }
                     state.copy(
