@@ -22,6 +22,7 @@ data class OverlaySnapshot(
     val lastRepMeanVelocityMs: Float,
     val lastRepPeakVelocityMs: Float,
     val lastRepPowerW: Float,
+    val lastRepDistanceM: Float,
     val heartRate: Int?
 ) {
     val zone: VelocityZone
