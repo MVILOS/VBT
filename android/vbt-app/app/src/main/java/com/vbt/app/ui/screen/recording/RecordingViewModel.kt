@@ -221,6 +221,7 @@ class RecordingViewModel @Inject constructor(
         lastRepMean = 0f
         lastRepPeak = 0f
         lastRepPower = 0f
+        lastRepDist = 0f
         recordStartElapsedMs = 0L
     }
 
