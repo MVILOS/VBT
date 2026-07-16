@@ -80,9 +80,11 @@ fun RecordingScreen(
         if (!hasCameraPermission) permissionLauncher.launch(requiredPermissions)
     }
 
+    val recorder by viewModel.recorder.collectAsState()
+
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         if (hasCameraPermission) {
-            CameraPreview(viewModel)
+            recorder?.let { CameraPreview(it) }
             LiveOverlay(state, Modifier.align(Alignment.BottomCenter))
             TopInfo(state, Modifier.align(Alignment.TopStart))
         } else {
