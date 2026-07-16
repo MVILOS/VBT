@@ -135,6 +135,14 @@ class RecordingViewModel @Inject constructor(
                 _uiState.update { it.copy(selectedMetrics = OverlayMetric.fromKeysOrDefault(keys)) }
             }
         }
+        // Recorder tworzymy raz, po odczytaniu jakości (zmiana jakości po tym momencie
+        // wymaga ponownego wejścia na ekran - Tune jest wyłączone w trakcie nagrywania).
+        viewModelScope.launch {
+            val quality = RecordingQuality.fromKey(preferencesManager.getRecordingQualityKey().first())
+            if (_recorder.value == null) {
+                _recorder.value = SetRecorder(appContext, quality)
+            }
+        }
     }
 
     fun startRecording() {
