@@ -125,6 +125,7 @@ fun SessionDetailScreen(
                     onEditSetWeight = viewModel::updateSetWeight,
                     onDeleteRep = viewModel::deleteRep,
                     onMergeSet = viewModel::mergeSetWithPrevious,
+                    onSplitSet = viewModel::splitSetFromRep,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
