@@ -488,7 +488,7 @@ private fun RepTableHeader() {
             modifier = Modifier.weight(0.7f),
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.weight(0.5f))
+        Spacer(modifier = Modifier.weight(0.9f))
     }
 }
 
