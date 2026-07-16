@@ -293,7 +293,7 @@ class RecordingViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        if (_uiState.value.isRecording) recorder.stop()
+        if (_uiState.value.isRecording) _recorder.value?.stop()
         stopCollectingEvents()
     }
 }
