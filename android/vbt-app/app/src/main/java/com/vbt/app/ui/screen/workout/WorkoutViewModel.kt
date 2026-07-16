@@ -876,13 +876,7 @@ class WorkoutViewModel @Inject constructor(
                     currentSetIndex = state.currentSetIndex + 1
                 )
             }
-            exercise.mvt?.let { mvt ->
-                bleManager.setExerciseParams(
-                    minLiftVel = mvt * 0.5f,
-                    endLiftVel = mvt * 0.7f,
-                    minRepDist = 0.15f
-                )
-            }
+            sendExerciseParams(exercise.mvt)
         }
     }
 
