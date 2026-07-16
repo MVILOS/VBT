@@ -225,7 +225,8 @@ private fun SessionDetailContent(
                     reps = session.reps,
                     onEditSetWeight = { setNumber -> setPendingWeightEdit = setNumber },
                     onDeleteRep = { rep -> repPendingDelete = rep },
-                    onMergeSet = { setNumber -> setPendingMerge = setNumber }
+                    onMergeSet = { setNumber -> setPendingMerge = setNumber },
+                    onSplitRep = { rep -> repPendingSplit = rep }
                 )
             }
 
