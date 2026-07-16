@@ -181,7 +181,18 @@ def append_reps(
         raise HTTPException(status_code=404, detail="Session not found")
     check_session_access(session, current_user, db)
 
+    # Idempotencja dogrywanych paczek: pomiń powtórzenie, które już jest w tej
+    # sesji pod tą samą etykietą (exercise_id, set_number, rep_number) - chroni
+    # przed duplikatami z podwójnego kolejkowania/ponowień po stronie aplikacji.
+    seen_reps = {
+        (r.exercise_id, r.set_number, r.rep_number)
+        for r in db.query(RepResult).filter(RepResult.session_id == session.id)
+    }
     for rep in data.reps:
+        key = (rep.exercise_id, rep.set_number, rep.rep_number)
+        if key in seen_reps:
+            continue
+        seen_reps.add(key)
         db.add(RepResult(
             session_id=session.id,
             exercise_id=rep.exercise_id,
