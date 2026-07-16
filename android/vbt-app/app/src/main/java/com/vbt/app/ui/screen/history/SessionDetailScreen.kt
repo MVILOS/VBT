@@ -386,7 +386,10 @@ private fun RepByRepSection(
                     RepTableRow(
                         rep = rep,
                         isAlternate = index % 2 == 1,
-                        onDelete = { onDeleteRep(rep) }
+                        onDelete = { onDeleteRep(rep) },
+                        // Rozdzielenie od pierwszego powtórzenia = cała seria,
+                        // do tego służy edycja ciężaru - stąd tylko od rep 2.
+                        onSplit = if (index > 0) ({ onSplitRep(rep) }) else null
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
