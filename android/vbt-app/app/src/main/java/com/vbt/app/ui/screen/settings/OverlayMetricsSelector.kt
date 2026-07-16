@@ -14,7 +14,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.weight
 import com.vbt.app.recording.OverlayMetric
 import com.vbt.app.ui.theme.VbtTeal
 
