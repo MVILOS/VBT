@@ -105,6 +105,11 @@ fun RecordingScreen(
                     colors = AssistChipDefaults.assistChipColors(labelColor = Color.White)
                 )
             }
+            // Ustawienia parametrów nakładki - dostęp wprost z ekranu nagrywania.
+            // Wyłączone w trakcie nagrywania (zestaw metryk jest utrwalany na starcie).
+            IconButton(onClick = onNavigateToSettings, enabled = !state.isRecording) {
+                Icon(Icons.Filled.Tune, "Parametry nakładki", tint = Color.White)
+            }
         }
 
         // Sterowanie / postęp na dole
