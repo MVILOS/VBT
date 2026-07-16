@@ -18,13 +18,19 @@ import java.io.File
  * potrzeby uprawnienia RECORD_AUDIO). [videoCapture] wiąże się z lifecycle w
  * RecordingScreen razem z podglądem; ta klasa steruje samym nagrywaniem.
  */
-class SetRecorder(private val context: Context) {
+class SetRecorder(
+    private val context: Context,
+    quality: RecordingQuality = RecordingQuality.DEFAULT
+) {
 
-    // FHD to dobry kompromis jakość/rozmiar; SD jako awaryjny fallback na słabszych
-    // urządzeniach, które nie wspierają 1080p w danym module aparatu.
+    // Wybrana jakość z Ustawień; FallbackStrategy schodzi niżej, gdy dany moduł
+    // aparatu nie wspiera żądanej rozdzielczości.
     private val recorder = Recorder.Builder()
         .setQualitySelector(
-            QualitySelector.from(Quality.FHD, FallbackStrategy.lowerQualityThan(Quality.FHD))
+            QualitySelector.from(
+                quality.toCameraQuality(),
+                FallbackStrategy.lowerQualityThan(quality.toCameraQuality())
+            )
         )
         .build()
 
