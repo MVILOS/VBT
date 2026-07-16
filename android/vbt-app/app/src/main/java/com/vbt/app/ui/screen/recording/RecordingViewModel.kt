@@ -12,8 +12,10 @@ import androidx.media3.common.util.UnstableApi
 import com.vbt.app.data.ble.BleConnectionState
 import com.vbt.app.data.ble.HeartRateManager
 import com.vbt.app.data.ble.VbtBleManager
+import com.vbt.app.data.local.PreferencesManager
 import com.vbt.app.domain.usecase.CalculatePowerUseCase
 import com.vbt.app.recording.GallerySaver
+import com.vbt.app.recording.OverlayMetric
 import com.vbt.app.recording.OverlaySnapshot
 import com.vbt.app.recording.OverlayTimeline
 import com.vbt.app.recording.SetRecorder
