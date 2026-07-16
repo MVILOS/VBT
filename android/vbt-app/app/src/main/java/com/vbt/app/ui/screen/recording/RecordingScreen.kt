@@ -40,6 +40,7 @@ import com.vbt.app.domain.model.VelocityZone
 @Composable
 fun RecordingScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToSettings: () -> Unit = {},
     viewModel: RecordingViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
