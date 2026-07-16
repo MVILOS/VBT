@@ -90,15 +90,11 @@ class OverlayRenderer {
             8f * scale, 8f * scale, accentPaint
         )
 
-        // Licznik powtórzeń + strefa (zawsze widoczne, u góry panelu)
+        // Licznik powtórzeń (zawsze widoczny, u góry panelu)
         val innerLeft = pad + 48f * scale
         textPaint.color = teal
         textPaint.textSize = 60f * scale
         canvas.drawText("REP ${snapshot.repCount}", innerLeft, panelTop + 66f * scale, textPaint)
-        labelPaint.color = zoneColor
-        labelPaint.textSize = 40f * scale
-        val repW = textPaint.measureText("REP ${snapshot.repCount}")
-        canvas.drawText(snapshot.zone.label.uppercase(), innerLeft + repW + 30f * scale, panelTop + 60f * scale, labelPaint)
 
         // Kafelki wybranych metryk (równo rozłożone w szerokości panelu)
         if (metrics.isNotEmpty()) {
