@@ -105,6 +105,7 @@ class RecordingViewModel @Inject constructor(
     private var lastRepMean = 0f
     private var lastRepPeak = 0f
     private var lastRepPower = 0f
+    private var lastRepDist = 0f
 
     private var collectJobs = mutableListOf<Job>()
 
