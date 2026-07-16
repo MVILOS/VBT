@@ -51,6 +51,12 @@ data class RecordingUiState(
     val liveVelocity: Float = 0f,
     val repCount: Int = 0,
     val heartRate: Int? = null,
+    val selectedMetrics: List<OverlayMetric> = OverlayMetric.DEFAULT.toList(),
+    // Metryki ostatniego zaliczonego powtórzenia (do podglądu kafelków na żywo)
+    val lastRepMeanVelocityMs: Float = 0f,
+    val lastRepPeakVelocityMs: Float = 0f,
+    val lastRepPowerW: Float = 0f,
+    val lastRepDistanceM: Float = 0f,
     val phase: RecordingPhase = RecordingPhase.Idle
 ) {
     val isRecording: Boolean get() = phase is RecordingPhase.Recording
