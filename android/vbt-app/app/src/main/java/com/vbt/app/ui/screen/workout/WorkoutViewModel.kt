@@ -449,14 +449,22 @@ class WorkoutViewModel @Inject constructor(
                 )
             }
 
-            exercise.mvt?.let { mvt ->
-                bleManager.setExerciseParams(
-                    minLiftVel = mvt * 0.5f,
-                    endLiftVel = mvt * 0.7f,
-                    minRepDist = 0.15f
-                )
-            }
+            sendExerciseParams(exercise.mvt)
         }
+    }
+
+    // Progi detekcji powtórzenia wysyłane do urządzenia: krytyczne minimum
+    // prędkości i rozwinięcia linki per-ćwiczenie (edytowalne na liście
+    // ćwiczeń), poniżej których ruch traktowany jest jako szum - np.
+    // wyciągnięcie linki podczas odkładania sztangi na stojaki po serii.
+    // Fallback: wartości wyprowadzone z MVT ćwiczenia lub bezpieczne stałe.
+    private suspend fun sendExerciseParams(mvt: Float?) {
+        val local = if (currentLocalExerciseId > 0) exerciseRepository.getById(currentLocalExerciseId) else null
+        bleManager.setExerciseParams(
+            minLiftVel = local?.defaultMinLiftVelocity?.takeIf { it > 0f } ?: mvt?.times(0.5f) ?: 0.3f,
+            endLiftVel = local?.defaultEndLiftVelocity?.takeIf { it > 0f } ?: mvt?.times(0.7f) ?: 0.6f,
+            minRepDist = local?.defaultMinRepDistance?.takeIf { it > 0f } ?: 0.15f
+        )
     }
 
     fun startPlanWorkout(plan: TrainingPlanDto) {
