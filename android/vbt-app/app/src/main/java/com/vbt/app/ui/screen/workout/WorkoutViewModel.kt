@@ -545,9 +545,9 @@ class WorkoutViewModel @Inject constructor(
             val state = _uiState.value
             if (state.isPaused || state.mode != WorkoutMode.ACTIVE) return@launch
 
-            // Moc = siła * ŚREDNIA prędkość koncentryczna (konwencja VBT dla "mean power");
-            // peak velocity służy tylko do stref/wyświetlania, nie do mocy.
-            val power = calculatePower.calculateMeanPower(state.currentLoadKg, rep.meanVelocityMs)
+            // Moc = siła * PEAK velocity (v_max) - decyzja z 16.07.2026, spójna
+            // z danymi historycznymi na serwerze (power_watts = m*g*v_peak).
+            val power = calculatePower.calculatePeakPower(state.currentLoadKg, rep.peakVelocityMs)
             val repNumber = state.completedRepsInSet.size + 1
 
             val repEntity = RepResultEntity(
