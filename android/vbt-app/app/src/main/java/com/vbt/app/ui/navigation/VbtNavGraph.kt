@@ -45,6 +45,7 @@ import com.vbt.app.ui.screen.plans.PlanEditScreen
 import com.vbt.app.ui.screen.plans.PlanListScreen
 import com.vbt.app.ui.screen.recording.RecordingScreen
 import com.vbt.app.ui.screen.schedule.ScheduleScreen
+import com.vbt.app.ui.screen.settings.SettingsScreen
 import com.vbt.app.ui.screen.workout.WorkoutScreen
 import com.vbt.app.ui.theme.VbtSurface
 import com.vbt.app.ui.theme.VbtTeal
