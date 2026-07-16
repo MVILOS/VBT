@@ -268,7 +268,8 @@ export default function AthleteProfilePage() {
             <p className="text-gray-500 text-sm py-8 text-center">No sessions recorded yet.</p>
           ) : (
             sessions.map(s => (
-              <div key={s.id} className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+              <button key={s.id} onClick={() => setDetailSessionId(s.id)}
+                className="w-full text-left bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:border-violet-400 transition-colors">
                 <div>
                   <p className="text-gray-900 font-medium">{new Date(s.started_at).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                   <p className="text-sm text-gray-500">
@@ -276,8 +277,8 @@ export default function AthleteProfilePage() {
                     {s.duration_seconds ? ` · ${Math.round(s.duration_seconds / 60)} min` : ''}
                   </p>
                 </div>
-                <span className="text-xs text-gray-500">{new Date(s.started_at).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
+                <span className="text-xs text-gray-500">{new Date(s.started_at).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })} ›</span>
+              </button>
             ))
           )}
         </div>
