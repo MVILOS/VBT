@@ -497,6 +497,7 @@ private fun RepTableRow(
     rep: RepResultDto,
     isAlternate: Boolean,
     onDelete: () -> Unit,
+    onSplit: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = if (isAlternate) VbtSurfaceVariant else VbtSurface
