@@ -210,6 +210,7 @@ class RecordingViewModel @Inject constructor(
             lastRepMeanVelocityMs = lastRepMean,
             lastRepPeakVelocityMs = lastRepPeak,
             lastRepPowerW = lastRepPower,
+            lastRepDistanceM = lastRepDist,
             heartRate = s.heartRate
         )
     }
