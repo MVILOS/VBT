@@ -26,6 +26,8 @@ class PreferencesManager @Inject constructor(@ApplicationContext private val con
         private val COACH_ID = intPreferencesKey("coach_id")
         // Zbiór kluczy metryk pokazywanych na nakładce nagrywania (patrz OverlayMetric)
         private val OVERLAY_METRICS = stringSetPreferencesKey("overlay_metrics")
+        // Jakość nagrywania wideo (patrz RecordingQuality)
+        private val RECORDING_QUALITY = stringPreferencesKey("recording_quality")
     }
 
     private val dataStore = context.dataStore
