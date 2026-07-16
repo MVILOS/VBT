@@ -78,6 +78,18 @@ dependencies {
     // Navigation
     implementation(libs.navigation.compose)
 
+    // CameraX - nagrywanie podejścia
+    implementation(libs.camera.core)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.video)
+    implementation(libs.camera.view)
+
+    // Media3 Transformer - wypalanie parametrów w wideo
+    implementation(libs.media3.transformer)
+    implementation(libs.media3.effect)
+    implementation(libs.media3.common)
+
     // Lifecycle
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
